@@ -1,4 +1,4 @@
-const APP_PASSWORD = "1234";
+const APP_PASSWORD = "1980";
 
 function login(){
 
@@ -272,6 +272,14 @@ function saveEvent(){
   const time =
     `${hour}:${minute}`;
 
+  if(!name || !schedule){
+
+    alert("入力してください");
+
+    return;
+
+  }
+
   const groupId =
     createGroupId();
 
@@ -319,26 +327,50 @@ function createRepeatEvents(
   let base =
     new Date(startDate);
 
-  for(let i=1;i<=12;i++){
+  for(let i=1;i<=365;i++){
 
     let next =
       new Date(base);
 
     if(repeat==="daily"){
 
-      next.setDate(base.getDate()+i);
+      next.setDate(
+        base.getDate()+i
+      );
 
     }
 
     if(repeat==="weekly"){
 
-      next.setDate(base.getDate()+(7*i));
+      next.setDate(
+        base.getDate()+(7*i)
+      );
 
     }
 
     if(repeat==="monthly"){
 
-      next.setMonth(base.getMonth()+i);
+      next.setMonth(
+        base.getMonth()+i
+      );
+
+    }
+
+    if(
+      repeat==="monthly" &&
+      i > 12
+    ){
+
+      break;
+
+    }
+
+    if(
+      repeat==="weekly" &&
+      i > 52
+    ){
+
+      break;
 
     }
 
@@ -367,9 +399,19 @@ function createRepeatEvents(
 
 }
 
-/* 個別削除 */
+/* 単発削除 */
 
 function deleteEvent(index){
+
+  if(
+    !confirm(
+      "この予定を削除しますか？"
+    )
+  ){
+
+    return;
+
+  }
 
   events[selectedDay]
     .splice(index,1);
@@ -388,7 +430,49 @@ function deleteEvent(index){
 
 }
 
-/* 修正版：未来分だけ削除 */
+/* 当日削除 */
+
+function deleteSingleDay(
+  groupId,
+  targetDate
+){
+
+  if(
+    !confirm(
+      "この日だけ削除しますか？"
+    )
+  ){
+
+    return;
+
+  }
+
+  if(events[targetDate]){
+
+    events[targetDate] =
+      events[targetDate].filter(ev=>
+
+        ev.groupId !== groupId
+
+      );
+
+    if(events[targetDate].length===0){
+
+      delete events[targetDate];
+
+    }
+
+  }
+
+  saveLocal();
+
+  renderCalendar();
+
+  renderDayEvents();
+
+}
+
+/* 以降削除 */
 
 function deleteRepeatEvents(
   groupId,
@@ -397,7 +481,7 @@ function deleteRepeatEvents(
 
   if(
     !confirm(
-      "この日以降の繰り返し予定を削除しますか？"
+      "この日以降を削除しますか？"
     )
   ){
 
@@ -410,10 +494,10 @@ function deleteRepeatEvents(
 
   for(const date in events){
 
-    const targetDate =
+    const target =
       new Date(date);
 
-    if(targetDate >= start){
+    if(target >= start){
 
       events[date] =
         events[date].filter(ev=>
@@ -440,7 +524,48 @@ function deleteRepeatEvents(
 
 }
 
-/* 当日 */
+/* 全削除 */
+
+function deleteAllRepeatEvents(
+  groupId
+){
+
+  if(
+    !confirm(
+      "繰り返し予定を全部削除しますか？"
+    )
+  ){
+
+    return;
+
+  }
+
+  for(const date in events){
+
+    events[date] =
+      events[date].filter(ev=>
+
+        ev.groupId !== groupId
+
+      );
+
+    if(events[date].length===0){
+
+      delete events[date];
+
+    }
+
+  }
+
+  saveLocal();
+
+  renderCalendar();
+
+  renderDayEvents();
+
+}
+
+/* 当日一覧 */
 
 function renderDayEvents(){
 
@@ -488,6 +613,8 @@ function renderDayEvents(){
       group.className =
         "button-group";
 
+      /* 単発削除 */
+
       const deleteBtn =
         document.createElement("button");
 
@@ -505,18 +632,42 @@ function renderDayEvents(){
 
       group.appendChild(deleteBtn);
 
+      /* 繰り返し */
+
       if(ev.repeat !== "none"){
 
-        const repeatBtn =
+        // 当日削除
+        const oneBtn =
           document.createElement("button");
 
-        repeatBtn.className =
+        oneBtn.className =
           "repeat-delete-btn";
 
-        repeatBtn.innerText =
-          "以降削除";
+        oneBtn.innerText =
+          "当日";
 
-        repeatBtn.onclick = ()=>{
+        oneBtn.onclick = ()=>{
+
+          deleteSingleDay(
+            ev.groupId,
+            selectedDay
+          );
+
+        };
+
+        group.appendChild(oneBtn);
+
+        // 以降削除
+        const futureBtn =
+          document.createElement("button");
+
+        futureBtn.className =
+          "repeat-delete-btn";
+
+        futureBtn.innerText =
+          "以降";
+
+        futureBtn.onclick = ()=>{
 
           deleteRepeatEvents(
             ev.groupId,
@@ -525,7 +676,27 @@ function renderDayEvents(){
 
         };
 
-        group.appendChild(repeatBtn);
+        group.appendChild(futureBtn);
+
+        // 全削除
+        const allBtn =
+          document.createElement("button");
+
+        allBtn.className =
+          "repeat-delete-btn";
+
+        allBtn.innerText =
+          "全部";
+
+        allBtn.onclick = ()=>{
+
+          deleteAllRepeatEvents(
+            ev.groupId
+          );
+
+        };
+
+        group.appendChild(allBtn);
 
       }
 
