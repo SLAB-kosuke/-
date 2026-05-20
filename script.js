@@ -613,7 +613,7 @@ function renderDayEvents(){
       group.className =
         "button-group";
 
-      /* 単発削除 */
+      /* 単発 or 当日削除 */
 
       const deleteBtn =
         document.createElement("button");
@@ -626,36 +626,27 @@ function renderDayEvents(){
 
       deleteBtn.onclick = ()=>{
 
-        deleteEvent(index);
-
-      };
-
-      group.appendChild(deleteBtn);
-
-      /* 繰り返し */
-
-      if(ev.repeat !== "none"){
-
-        // 当日削除
-        const oneBtn =
-          document.createElement("button");
-
-        oneBtn.className =
-          "repeat-delete-btn";
-
-        oneBtn.innerText =
-          "当日";
-
-        oneBtn.onclick = ()=>{
+        // 繰り返し予定
+        if(ev.repeat !== "none"){
 
           deleteSingleDay(
             ev.groupId,
             selectedDay
           );
 
-        };
+        }else{
 
-        group.appendChild(oneBtn);
+          deleteEvent(index);
+
+        }
+
+      };
+
+      group.appendChild(deleteBtn);
+
+      /* 繰り返しだけ表示 */
+
+      if(ev.repeat !== "none"){
 
         // 以降削除
         const futureBtn =
@@ -665,7 +656,7 @@ function renderDayEvents(){
           "repeat-delete-btn";
 
         futureBtn.innerText =
-          "以降";
+          "以降削除";
 
         futureBtn.onclick = ()=>{
 
@@ -686,7 +677,7 @@ function renderDayEvents(){
           "repeat-delete-btn";
 
         allBtn.innerText =
-          "全部";
+          "全削除";
 
         allBtn.onclick = ()=>{
 
