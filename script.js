@@ -849,3 +849,7 @@ onSnapshot(
 
 );
 renderCalendar();
+window.login = login;
+window.saveEvent = saveEvent;
+window.closeModal = closeModal;
+window.changeMonth = changeMonth;
