@@ -269,6 +269,12 @@ function createGroupId(){
 
 window.saveEvent = async function(){
 
+  const saveBtn =
+    document.querySelector(".save-btn");
+
+  saveBtn.disabled = true;
+  saveBtn.innerText = "保存中...";
+
   const name =
     document.getElementById("name").value;
 
@@ -290,6 +296,9 @@ window.saveEvent = async function(){
   if(!name || !schedule){
 
     alert("入力してください");
+
+    saveBtn.disabled = false;
+    saveBtn.innerText = "決定";
 
     return;
 
@@ -333,26 +342,8 @@ window.saveEvent = async function(){
 
   }
 
-  // 即時反映
-  if(!events[selectedDay]){
-
-    events[selectedDay] = [];
-
-  }
-
-  events[selectedDay].push({
-
-    date: selectedDay,
-    name,
-    schedule,
-    time,
-    repeat,
-    groupId
-
-  });
-
-  renderDayEvents();
-  renderCalendar();
+  saveBtn.disabled = false;
+  saveBtn.innerText = "決定";
 
 };
 
@@ -475,15 +466,6 @@ async function deleteEvent(id){
     doc(db,"events",id)
   );
 
-  // 即時反映
-  events[selectedDay] =
-    events[selectedDay].filter(
-      ev => ev.id !== id
-    );
-
-  renderDayEvents();
-  renderCalendar();
-
 }
 
 
@@ -521,15 +503,6 @@ async function deleteSingleDay(
     }
 
   }
-
-  // 即時反映
-  events[targetDate] =
-    events[targetDate].filter(
-      ev => ev.groupId !== groupId
-    );
-
-  renderDayEvents();
-  renderCalendar();
 
 }
 
@@ -577,26 +550,6 @@ async function deleteRepeatEvents(
 
   }
 
-  // 即時反映
-  for(const date in events){
-
-    const target =
-      new Date(date);
-
-    if(target >= start){
-
-      events[date] =
-        events[date].filter(
-          ev => ev.groupId !== groupId
-        );
-
-    }
-
-  }
-
-  renderDayEvents();
-  renderCalendar();
-
 }
 
 
@@ -631,19 +584,6 @@ async function deleteAllRepeatEvents(
     }
 
   }
-
-  // 即時反映
-  for(const date in events){
-
-    events[date] =
-      events[date].filter(
-        ev => ev.groupId !== groupId
-      );
-
-  }
-
-  renderDayEvents();
-  renderCalendar();
 
 }
 
@@ -915,6 +855,12 @@ onSnapshot(
     });
 
     renderCalendar();
+
+    if(selectedDay){
+
+      renderDayEvents();
+
+    }
 
   }
 
