@@ -35,6 +35,19 @@ const app =
 
 const db =
   getFirestore(app);
+const auth = getAuth(app);
+
+signInAnonymously(auth)
+  .then(() => {
+
+    console.log("匿名ログイン成功");
+
+  })
+  .catch((error) => {
+
+    console.error(error);
+
+  });
 
 
 /* パスワード */
