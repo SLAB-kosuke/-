@@ -909,3 +909,14 @@ window.saveEvent = saveEvent;
 window.closeModal = closeModal;
 window.changeMonth = changeMonth;
 window.openModal = openModal;
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker
+    .register("./service-worker.js")
+    .then(() => {
+
+      console.log("Service Worker登録成功");
+
+    });
+
+}
