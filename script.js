@@ -317,7 +317,17 @@ window.saveEvent = async function(){
 
     saveBtn.disabled = false;
     saveBtn.innerText = "決定";
+ // 入力リセット
 
+  document.getElementById("name").value = "";
+
+  document.getElementById("schedule").value = "";
+
+  document.getElementById("hour").value = "00";
+
+  document.getElementById("minute").value = "00";
+
+  document.getElementById("repeatType").value = "none";
     return;
 
   }
