@@ -7,8 +7,7 @@ import {
   onSnapshot,
   deleteDoc,
   doc
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+}from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 /* Firebase設定 */
@@ -849,3 +848,4 @@ onSnapshot(
   }
 
 );
+renderCalendar();
