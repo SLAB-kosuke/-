@@ -1,6 +1,53 @@
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  deleteDoc,
+  doc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+/* Firebase設定 */
+
+const firebaseConfig = {
+
+  apiKey: "ここにapiKey",
+
+  authDomain: "ここにauthDomain",
+
+  projectId: "ここにprojectId",
+
+  storageBucket: "ここにstorageBucket",
+
+  messagingSenderId: "ここにmessagingSenderId",
+
+  appId: "ここにappId"
+
+};
+
+
+/* Firebase開始 */
+
+const app =
+  initializeApp(firebaseConfig);
+
+const db =
+  getFirestore(app);
+
+
+/* パスワード */
+
 const APP_PASSWORD = "1980";
 
-function login(){
+
+/* ログイン */
+
+window.login = function(){
 
   const pass =
     document.getElementById("passwordInput").value;
@@ -16,14 +63,17 @@ function login(){
 
   }
 
-}
+};
+
+
+/* 基本 */
 
 let currentDate = new Date();
 
 let selectedDay = null;
 
-let events =
-  JSON.parse(localStorage.getItem("familyEvents")) || {};
+let events = {};
+
 
 /* 時間 */
 
@@ -39,11 +89,13 @@ for(let i=0;i<24;i++){
     i.toString().padStart(2,"0");
 
   option.value = value;
+
   option.textContent = value;
 
   hourSelect.appendChild(option);
 
 }
+
 
 /* 色 */
 
@@ -76,18 +128,10 @@ function getClass(name){
 
 }
 
-function saveLocal(){
-
-  localStorage.setItem(
-    "familyEvents",
-    JSON.stringify(events)
-  );
-
-}
 
 /* カレンダー */
 
-function renderCalendar(){
+window.renderCalendar = function(){
 
   const calendar =
     document.getElementById("calendar");
@@ -112,7 +156,9 @@ function renderCalendar(){
     const div =
       document.createElement("div");
 
-    div.className = "day-name";
+    div.className =
+      "day-name";
+
     div.innerText = day;
 
     calendar.appendChild(div);
@@ -130,7 +176,8 @@ function renderCalendar(){
     const empty =
       document.createElement("div");
 
-    empty.className = "day empty";
+    empty.className =
+      "day empty";
 
     calendar.appendChild(empty);
 
@@ -144,7 +191,8 @@ function renderCalendar(){
     const dayDiv =
       document.createElement("div");
 
-    dayDiv.className = "day";
+    dayDiv.className =
+      "day";
 
     dayDiv.innerHTML =
       `<div class="date">${day}</div>`;
@@ -187,11 +235,12 @@ function renderCalendar(){
 
   renderMonthlyList();
 
-}
+};
+
 
 /* モーダル */
 
-function openModal(date){
+window.openModal = function(date){
 
   selectedDay = date;
 
@@ -204,16 +253,18 @@ function openModal(date){
 
   renderDayEvents();
 
-}
+};
 
-function closeModal(){
+
+window.closeModal = function(){
 
   document.getElementById("modal")
     .style.display = "none";
 
-}
+};
 
-/* group */
+
+/* group id */
 
 function createGroupId(){
 
@@ -221,38 +272,10 @@ function createGroupId(){
 
 }
 
-/* 追加 */
-
-function addEvent(
-  date,
-  name,
-  schedule,
-  time,
-  repeat,
-  groupId
-){
-
-  if(!events[date]){
-
-    events[date] = [];
-
-  }
-
-  events[date].push({
-
-    name,
-    schedule,
-    time,
-    repeat,
-    groupId
-
-  });
-
-}
 
 /* 保存 */
 
-function saveEvent(){
+window.saveEvent = async function(){
 
   const name =
     document.getElementById("name").value;
@@ -283,18 +306,31 @@ function saveEvent(){
   const groupId =
     createGroupId();
 
-  addEvent(
-    selectedDay,
-    name,
-    schedule,
-    time,
-    repeat,
-    groupId
+  await addDoc(
+
+    collection(db,"events"),
+
+    {
+
+      date: selectedDay,
+
+      name,
+
+      schedule,
+
+      time,
+
+      repeat,
+
+      groupId
+
+    }
+
   );
 
   if(repeat !== "none"){
 
-    createRepeatEvents(
+    await createRepeatEvents(
       selectedDay,
       name,
       schedule,
@@ -305,17 +341,12 @@ function saveEvent(){
 
   }
 
-  saveLocal();
+};
 
-  renderCalendar();
-
-  renderDayEvents();
-
-}
 
 /* 繰り返し */
 
-function createRepeatEvents(
+async function createRepeatEvents(
   startDate,
   name,
   schedule,
@@ -386,26 +417,40 @@ function createRepeatEvents(
     const key =
       `${y}-${m}-${d}`;
 
-    addEvent(
-      key,
-      name,
-      schedule,
-      time,
-      repeat,
-      groupId
+    await addDoc(
+
+      collection(db,"events"),
+
+      {
+
+        date: key,
+
+        name,
+
+        schedule,
+
+        time,
+
+        repeat,
+
+        groupId
+
+      }
+
     );
 
   }
 
 }
 
-/* 単発削除 */
 
-function deleteEvent(index){
+/* 削除 */
+
+async function deleteEvent(id){
 
   if(
     !confirm(
-      "この予定を削除しますか？"
+      "削除しますか？"
     )
   ){
 
@@ -413,26 +458,16 @@ function deleteEvent(index){
 
   }
 
-  events[selectedDay]
-    .splice(index,1);
-
-  if(events[selectedDay].length===0){
-
-    delete events[selectedDay];
-
-  }
-
-  saveLocal();
-
-  renderCalendar();
-
-  renderDayEvents();
+  await deleteDoc(
+    doc(db,"events",id)
+  );
 
 }
 
+
 /* 当日削除 */
 
-function deleteSingleDay(
+async function deleteSingleDay(
   groupId,
   targetDate
 ){
@@ -447,34 +482,30 @@ function deleteSingleDay(
 
   }
 
-  if(events[targetDate]){
+  if(!events[targetDate]){
 
-    events[targetDate] =
-      events[targetDate].filter(ev=>
+    return;
 
-        ev.groupId !== groupId
+  }
 
+  for(const ev of events[targetDate]){
+
+    if(ev.groupId === groupId){
+
+      await deleteDoc(
+        doc(db,"events",ev.id)
       );
-
-    if(events[targetDate].length===0){
-
-      delete events[targetDate];
 
     }
 
   }
 
-  saveLocal();
-
-  renderCalendar();
-
-  renderDayEvents();
-
 }
+
 
 /* 以降削除 */
 
-function deleteRepeatEvents(
+async function deleteRepeatEvents(
   groupId,
   fromDate
 ){
@@ -499,16 +530,15 @@ function deleteRepeatEvents(
 
     if(target >= start){
 
-      events[date] =
-        events[date].filter(ev=>
+      for(const ev of events[date]){
 
-          ev.groupId !== groupId
+        if(ev.groupId === groupId){
 
-        );
+          await deleteDoc(
+            doc(db,"events",ev.id)
+          );
 
-      if(events[date].length===0){
-
-        delete events[date];
+        }
 
       }
 
@@ -516,17 +546,12 @@ function deleteRepeatEvents(
 
   }
 
-  saveLocal();
-
-  renderCalendar();
-
-  renderDayEvents();
-
 }
+
 
 /* 全削除 */
 
-function deleteAllRepeatEvents(
+async function deleteAllRepeatEvents(
   groupId
 ){
 
@@ -542,30 +567,24 @@ function deleteAllRepeatEvents(
 
   for(const date in events){
 
-    events[date] =
-      events[date].filter(ev=>
+    for(const ev of events[date]){
 
-        ev.groupId !== groupId
+      if(ev.groupId === groupId){
 
-      );
+        await deleteDoc(
+          doc(db,"events",ev.id)
+        );
 
-    if(events[date].length===0){
-
-      delete events[date];
+      }
 
     }
 
   }
 
-  saveLocal();
-
-  renderCalendar();
-
-  renderDayEvents();
-
 }
 
-/* 当日一覧 */
+
+/* 日別一覧 */
 
 function renderDayEvents(){
 
@@ -587,7 +606,7 @@ function renderDayEvents(){
   }
 
   events[selectedDay]
-    .forEach((ev,index)=>{
+    .forEach(ev=>{
 
       const div =
         document.createElement("div");
@@ -613,7 +632,7 @@ function renderDayEvents(){
       group.className =
         "button-group";
 
-      /* 単発 or 当日削除 */
+      /* 削除 */
 
       const deleteBtn =
         document.createElement("button");
@@ -626,7 +645,6 @@ function renderDayEvents(){
 
       deleteBtn.onclick = ()=>{
 
-        // 繰り返し予定
         if(ev.repeat !== "none"){
 
           deleteSingleDay(
@@ -636,7 +654,7 @@ function renderDayEvents(){
 
         }else{
 
-          deleteEvent(index);
+          deleteEvent(ev.id);
 
         }
 
@@ -644,7 +662,7 @@ function renderDayEvents(){
 
       group.appendChild(deleteBtn);
 
-      /* 繰り返しだけ表示 */
+      /* 繰り返し */
 
       if(ev.repeat !== "none"){
 
@@ -699,9 +717,10 @@ function renderDayEvents(){
 
 }
 
+
 /* 月変更 */
 
-function changeMonth(num){
+window.changeMonth = function(num){
 
   currentDate.setMonth(
     currentDate.getMonth()+num
@@ -709,7 +728,8 @@ function changeMonth(num){
 
   renderCalendar();
 
-}
+};
+
 
 /* 一覧 */
 
@@ -798,4 +818,40 @@ function renderMonthlyList(){
 
 }
 
-renderCalendar();
+
+/* リアルタイム同期 */
+
+onSnapshot(
+
+  collection(db,"events"),
+
+  (snapshot)=>{
+
+    events = {};
+
+    snapshot.forEach(docSnap=>{
+
+      const data =
+        docSnap.data();
+
+      if(!events[data.date]){
+
+        events[data.date] = [];
+
+      }
+
+      events[data.date].push({
+
+        id: docSnap.id,
+
+        ...data
+
+      });
+
+    });
+
+    renderCalendar();
+
+  }
+
+);
