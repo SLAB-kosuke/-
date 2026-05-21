@@ -332,7 +332,7 @@ window.saveEvent = async function(){
     );
 
   }
-
+renderDayEvents()
 };
 
 
