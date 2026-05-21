@@ -35,7 +35,9 @@ const app =
 
 const db =
   getFirestore(app);
-const auth = getAuth(app);
+
+const auth =
+  getAuth(app);
 
 signInAnonymously(auth)
   .then(() => {
@@ -291,6 +293,7 @@ window.saveEvent = async function(){
     document.querySelector(".save-btn");
 
   saveBtn.disabled = true;
+
   saveBtn.innerText = "保存中...";
 
   const name =
@@ -316,18 +319,9 @@ window.saveEvent = async function(){
     alert("入力してください");
 
     saveBtn.disabled = false;
+
     saveBtn.innerText = "決定";
- // 入力リセット
 
-  document.getElementById("name").value = "";
-
-  document.getElementById("schedule").value = "";
-
-  document.getElementById("hour").value = "00";
-
-  document.getElementById("minute").value = "00";
-
-  document.getElementById("repeatType").value = "none";
     return;
 
   }
@@ -371,7 +365,22 @@ window.saveEvent = async function(){
   }
 
   saveBtn.disabled = false;
+
   saveBtn.innerText = "決定";
+
+  setTimeout(()=>{
+
+    document.getElementById("name").value = "";
+
+    document.getElementById("schedule").value = "";
+
+    document.getElementById("hour").value = "00";
+
+    document.getElementById("minute").value = "00";
+
+    document.getElementById("repeatType").value = "none";
+
+  },200);
 
 };
 
@@ -698,7 +707,6 @@ function renderDayEvents(){
 
       if(ev.repeat !== "none"){
 
-        // 以降削除
         const futureBtn =
           document.createElement("button");
 
@@ -719,7 +727,6 @@ function renderDayEvents(){
 
         group.appendChild(futureBtn);
 
-        // 全削除
         const allBtn =
           document.createElement("button");
 
