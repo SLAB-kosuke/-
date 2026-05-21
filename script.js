@@ -16,20 +16,15 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
 
-  apiKey: "ここにapiKey",
-
-  authDomain: "ここにauthDomain",
-
-  projectId: "ここにprojectId",
-
-  storageBucket: "ここにstorageBucket",
-
-  messagingSenderId: "ここにmessagingSenderId",
-
-  appId: "ここにappId"
-
+const firebaseConfig = {
+  apiKey: "AIzaSyBGeCs9-gsS66uCZ9HqEsbSqNv4_dOE5Bg",
+  authDomain: "family-calendar-38bf7.firebaseapp.com",
+  projectId: "family-calendar-38bf7",
+  storageBucket: "family-calendar-38bf7.firebasestorage.app",
+  messagingSenderId: "419708212606",
+  appId: "1:419708212606:web:2c93b424d3bd8c7387cf2f",
+  measurementId: "G-H72FRHK749"
 };
-
 
 /* Firebase開始 */
 
