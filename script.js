@@ -1,4 +1,4 @@
-import { initializeApp }from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getFirestore,
@@ -7,11 +7,10 @@ import {
   onSnapshot,
   deleteDoc,
   doc
-}from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 /* Firebase設定 */
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGeCs9-gsS66uCZ9HqEsbSqNv4_dOE5Bg",
@@ -22,6 +21,7 @@ const firebaseConfig = {
   appId: "1:419708212606:web:2c93b424d3bd8c7387cf2f",
   measurementId: "G-H72FRHK749"
 };
+
 
 /* Firebase開始 */
 
@@ -332,7 +332,28 @@ window.saveEvent = async function(){
     );
 
   }
-renderDayEvents()
+
+  // 即時反映
+  if(!events[selectedDay]){
+
+    events[selectedDay] = [];
+
+  }
+
+  events[selectedDay].push({
+
+    date: selectedDay,
+    name,
+    schedule,
+    time,
+    repeat,
+    groupId
+
+  });
+
+  renderDayEvents();
+  renderCalendar();
+
 };
 
 
@@ -454,6 +475,15 @@ async function deleteEvent(id){
     doc(db,"events",id)
   );
 
+  // 即時反映
+  events[selectedDay] =
+    events[selectedDay].filter(
+      ev => ev.id !== id
+    );
+
+  renderDayEvents();
+  renderCalendar();
+
 }
 
 
@@ -491,6 +521,15 @@ async function deleteSingleDay(
     }
 
   }
+
+  // 即時反映
+  events[targetDate] =
+    events[targetDate].filter(
+      ev => ev.groupId !== groupId
+    );
+
+  renderDayEvents();
+  renderCalendar();
 
 }
 
@@ -538,6 +577,26 @@ async function deleteRepeatEvents(
 
   }
 
+  // 即時反映
+  for(const date in events){
+
+    const target =
+      new Date(date);
+
+    if(target >= start){
+
+      events[date] =
+        events[date].filter(
+          ev => ev.groupId !== groupId
+        );
+
+    }
+
+  }
+
+  renderDayEvents();
+  renderCalendar();
+
 }
 
 
@@ -572,6 +631,19 @@ async function deleteAllRepeatEvents(
     }
 
   }
+
+  // 即時反映
+  for(const date in events){
+
+    events[date] =
+      events[date].filter(
+        ev => ev.groupId !== groupId
+      );
+
+  }
+
+  renderDayEvents();
+  renderCalendar();
 
 }
 
@@ -847,8 +919,12 @@ onSnapshot(
   }
 
 );
+
+
 renderCalendar();
+
 window.login = login;
 window.saveEvent = saveEvent;
 window.closeModal = closeModal;
 window.changeMonth = changeMonth;
+window.openModal = openModal;
