@@ -1,5 +1,6 @@
 // =========================
-// 家族予定アプリ（完全安定版）
+// 家族予定アプリ（完成版）
+// 背景色分け対応
 // =========================
 
 const APP_PASSWORD = "1980";
@@ -8,19 +9,19 @@ let currentDate = new Date();
 let events = JSON.parse(localStorage.getItem("familyEvents") || "{}");
 
 // =========================
-// 名前カラー
+// 名前カラー（背景色）
 // =========================
 const nameColors = {
-  "パパ": "#4a90e2",
-  "ママ": "#e26aa0",
-  "トウカ": "#7ed321",
-  "ヒヨリ": "#f5a623",
-  "祖母": "#8e44ad",
-  "祖父": "#34495e"
+  "パパ": "#4a90e2",     // 青
+  "ママ": "#f1c40f",     // 黄
+  "トウカ": "#7ed6ff",   // ライトブルー
+  "ヒヨリ": "#ff7eb6",   // ピンク
+  "祖母": "#9b59b6",     // 紫
+  "祖父": "#95a5a6"      // グレー
 };
 
 // =========================
-// 初期化（これが超重要）
+// 初期化
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
   renderCalendar();
@@ -54,8 +55,6 @@ function renderCalendar() {
   const calendar = document.getElementById("calendar");
   const monthYear = document.getElementById("monthYear");
 
-  if (!calendar || !monthYear) return;
-
   calendar.innerHTML = "";
 
   const year = currentDate.getFullYear();
@@ -79,13 +78,21 @@ function renderCalendar() {
       <div>${day}</div>
     `;
 
-    // ★予定を全部表示
+    // ★予定表示（背景色バッジ）
     dayEvents.forEach(e => {
 
-      const color = nameColors[e.name] || "#333";
+      const bg = nameColors[e.name] || "#ccc";
 
       html += `
-        <div style="font-size:11px;color:${color};line-height:1.2;">
+        <div style="
+          background:${bg};
+          color:#fff;
+          font-size:11px;
+          padding:2px 5px;
+          margin-top:2px;
+          border-radius:5px;
+          line-height:1.2;
+        ">
           ${e.time} ${e.name} ${e.schedule}
         </div>
       `;
@@ -103,8 +110,6 @@ function renderCalendar() {
 function renderMonthlyList() {
 
   const list = document.getElementById("monthlyList");
-  if (!list) return;
-
   list.innerHTML = "";
 
   const year = currentDate.getFullYear();
@@ -122,11 +127,23 @@ function renderMonthlyList() {
 
         hasData = true;
 
-        const color = nameColors[e.name] || "#333";
+        const bg = nameColors[e.name] || "#ccc";
 
         list.innerHTML += `
-          <div style="color:${color}">
-            ${dateKey} ${e.time} ${e.name}：${e.schedule}
+          <div style="margin-bottom:6px;">
+            
+            <span style="
+              background:${bg};
+              color:#fff;
+              padding:3px 6px;
+              border-radius:5px;
+              font-size:12px;
+              margin-right:6px;
+            ">
+              ${e.name}
+            </span>
+
+            ${dateKey} ${e.time}：${e.schedule}
           </div>
         `;
       });
@@ -204,8 +221,6 @@ window.saveEvent = function () {
 function renderDayEvents(dateKey) {
 
   const container = document.getElementById("dayEvents");
-  if (!container) return;
-
   container.innerHTML = "";
 
   const dayEvents = events[dateKey] || [];
@@ -217,10 +232,16 @@ function renderDayEvents(dateKey) {
 
   dayEvents.forEach((e, i) => {
 
-    const color = nameColors[e.name] || "#333";
+    const bg = nameColors[e.name] || "#ccc";
 
     container.innerHTML += `
-      <div style="color:${color}">
+      <div style="
+        background:${bg};
+        color:#fff;
+        padding:5px;
+        margin-bottom:5px;
+        border-radius:5px;
+      ">
         ${e.time} ${e.name}：${e.schedule}
         <button onclick="deleteEvent('${dateKey}', ${i})">削除</button>
       </div>
