@@ -1,5 +1,5 @@
 // =========================
-// 家族予定アプリ（安定版）
+// 家族予定アプリ（完全安定版）
 // =========================
 
 const APP_PASSWORD = "1980";
@@ -8,26 +8,46 @@ let currentDate = new Date();
 let events = JSON.parse(localStorage.getItem("familyEvents") || "{}");
 
 // =========================
+// 名前カラー
+// =========================
+const nameColors = {
+  "パパ": "#4a90e2",
+  "ママ": "#e26aa0",
+  "トウカ": "#7ed321",
+  "ヒヨリ": "#f5a623",
+  "祖母": "#8e44ad",
+  "祖父": "#34495e"
+};
+
+// =========================
+// 初期化（これが超重要）
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+  renderCalendar();
+  renderMonthlyList();
+});
+
+// =========================
 // ログイン
 // =========================
 window.login = function () {
 
-  const pass = document
-    .getElementById("passwordInput")
-    .value
-    .trim();
+  const pass = document.getElementById("passwordInput").value.trim();
 
   if (pass === APP_PASSWORD) {
+
     document.getElementById("loginScreen").style.display = "none";
+
     renderCalendar();
     renderMonthlyList();
+
   } else {
     alert("パスワードが違います");
   }
 };
 
 // =========================
-// カレンダー描画
+// カレンダー表示
 // =========================
 function renderCalendar() {
 
@@ -55,14 +75,25 @@ function renderCalendar() {
     const dateKey = `${year}-${month + 1}-${day}`;
     const dayEvents = events[dateKey] || [];
 
-    calendar.innerHTML += `
-      <div class="day" onclick="openModal('${dateKey}')">
-        <div>${day}</div>
-        <div style="font-size:12px;">
-          ${dayEvents.length ? dayEvents.length + "件" : ""}
-        </div>
-      </div>
+    let html = `<div class="day" onclick="openModal('${dateKey}')">
+      <div>${day}</div>
     `;
+
+    // ★予定を全部表示
+    dayEvents.forEach(e => {
+
+      const color = nameColors[e.name] || "#333";
+
+      html += `
+        <div style="font-size:11px;color:${color};line-height:1.2;">
+          ${e.time} ${e.name} ${e.schedule}
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+
+    calendar.innerHTML += html;
   }
 }
 
@@ -79,31 +110,32 @@ function renderMonthlyList() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const keys = Object.keys(events).filter(k => {
-    const [y, m] = k.split("-").map(Number);
-    return y === year && m === month + 1;
-  });
+  let hasData = false;
 
-  if (keys.length === 0) {
-    list.innerHTML = "<p>予定なし</p>";
-    return;
+  for (const dateKey in events) {
+
+    const [y, m] = dateKey.split("-").map(Number);
+
+    if (y === year && m === month + 1) {
+
+      events[dateKey].forEach(e => {
+
+        hasData = true;
+
+        const color = nameColors[e.name] || "#333";
+
+        list.innerHTML += `
+          <div style="color:${color}">
+            ${dateKey} ${e.time} ${e.name}：${e.schedule}
+          </div>
+        `;
+      });
+    }
   }
 
-  keys.sort((a, b) => new Date(a) - new Date(b));
-
-  keys.forEach(dateKey => {
-
-    events[dateKey].forEach(e => {
-
-      list.innerHTML += `
-        <div class="event-item">
-          ${dateKey} ${e.time} ${e.name}：${e.schedule}
-        </div>
-      `;
-
-    });
-
-  });
+  if (!hasData) {
+    list.innerHTML = "<p>今月の予定はありません</p>";
+  }
 }
 
 // =========================
@@ -120,10 +152,10 @@ window.changeMonth = function (offset) {
 // =========================
 window.openModal = function (dateKey) {
 
+  window.selectedDate = dateKey;
+
   document.getElementById("modal").style.display = "block";
   document.getElementById("selectedDate").textContent = dateKey;
-
-  window.selectedDate = dateKey;
 
   renderDayEvents(dateKey);
 };
@@ -161,9 +193,9 @@ window.saveEvent = function () {
 
   localStorage.setItem("familyEvents", JSON.stringify(events));
 
-  renderDayEvents(dateKey);
   renderCalendar();
-  renderMonthlyList(); // ★これ重要（反映漏れ防止）
+  renderMonthlyList();
+  renderDayEvents(dateKey);
 };
 
 // =========================
@@ -185,13 +217,14 @@ function renderDayEvents(dateKey) {
 
   dayEvents.forEach((e, i) => {
 
+    const color = nameColors[e.name] || "#333";
+
     container.innerHTML += `
-      <div class="event-item">
+      <div style="color:${color}">
         ${e.time} ${e.name}：${e.schedule}
         <button onclick="deleteEvent('${dateKey}', ${i})">削除</button>
       </div>
     `;
-
   });
 }
 
@@ -208,15 +241,7 @@ window.deleteEvent = function (dateKey, index) {
 
   localStorage.setItem("familyEvents", JSON.stringify(events));
 
+  renderCalendar();
+  renderMonthlyList();
   renderDayEvents(dateKey);
-  renderCalendar();
-  renderMonthlyList();
 };
-
-// =========================
-// 初期表示
-// =========================
-document.addEventListener("DOMContentLoaded", () => {
-  renderCalendar();
-  renderMonthlyList();
-});
