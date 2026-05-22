@@ -60,6 +60,14 @@ signInAnonymously(auth)
 
 const APP_PASSWORD = "1980";
 
+const input = String(e.parameter.password || "").trim();
+
+if (input === APP_PASSWORD) {
+  return ContentService.createTextOutput("OK");
+} else {
+  return ContentService.createTextOutput("NG");
+}
+
 
 /* ログイン */
 
