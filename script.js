@@ -11,7 +11,8 @@ import {
   addDoc,
   onSnapshot,
   deleteDoc,
-  doc
+  doc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -39,6 +40,9 @@ const db =
 const auth =
   getAuth(app);
 
+
+/* 匿名ログイン */
+
 signInAnonymously(auth)
   .then(() => {
 
@@ -54,7 +58,7 @@ signInAnonymously(auth)
 
 /* パスワード */
 
-const APP_PASSWORD = "1980";
+const APP_PASSWORD = "2026";
 
 
 /* ログイン */
@@ -85,14 +89,16 @@ let currentDate = new Date();
 let selectedDay = null;
 
 let events = {};
+
 let editingId = null;
+
 
 /* 時間 */
 
 const hourSelect =
   document.getElementById("hour");
 
-for(let i=0;i<24;i++){
+for(let i=8;i<24;i++){
 
   const option =
     document.createElement("option");
@@ -115,23 +121,14 @@ function getClass(name){
 
   switch(name){
 
-    case "パパ":
-      return "papa";
+    case "BOSS":
+      return "BOSS";
 
-    case "ママ":
-      return "mama";
+    case "井手":
+      return "ide";
 
-    case "トウカ":
-      return "touka";
-
-    case "ヒヨリ":
-      return "hiyori";
-
-    case "祖母":
-      return "sobo";
-
-    case "祖父":
-      return "soji";
+    case "スケ":
+      return "suke";
 
     default:
       return "";
@@ -326,32 +323,52 @@ window.saveEvent = async function(){
 
   }
 
-  const groupId =
+  let groupId =
     createGroupId();
 
-  await addDoc(
+  if(editingId){
 
-    collection(db,"events"),
+    const ref =
+      doc(db,"events",editingId);
 
-    {
-
-      date: selectedDay,
+    await updateDoc(ref,{
 
       name,
-
       schedule,
-
       time,
+      repeat
 
-      repeat,
+    });
 
-      groupId
+    editingId = null;
 
-    }
+  }else{
 
-  );
+    await addDoc(
 
-  if(repeat !== "none"){
+      collection(db,"events"),
+
+      {
+
+        date: selectedDay,
+
+        name,
+
+        schedule,
+
+        time,
+
+        repeat,
+
+        groupId
+
+      }
+
+    );
+
+  }
+
+  if(repeat !== "none" && !editingId){
 
     await createRepeatEvents(
       selectedDay,
@@ -374,13 +391,15 @@ window.saveEvent = async function(){
 
     document.getElementById("schedule").value = "";
 
-    document.getElementById("hour").value = "00";
+    document.getElementById("hour").value = "08";
 
     document.getElementById("minute").value = "00";
 
     document.getElementById("repeatType").value = "none";
 
   },200);
+
+  renderDayEvents();
 
 };
 
@@ -673,6 +692,43 @@ function renderDayEvents(){
       group.className =
         "button-group";
 
+      /* 編集 */
+
+      const editBtn =
+        document.createElement("button");
+
+      editBtn.className =
+        "repeat-delete-btn";
+
+      editBtn.innerText =
+        "編集";
+
+      editBtn.onclick = ()=>{
+
+        editingId = ev.id;
+
+        document.getElementById("name").value =
+          ev.name;
+
+        document.getElementById("schedule").value =
+          ev.schedule;
+
+        const sp =
+          ev.time.split(":");
+
+        document.getElementById("hour").value =
+          sp[0];
+
+        document.getElementById("minute").value =
+          sp[1];
+
+        document.getElementById("repeatType").value =
+          ev.repeat;
+
+      };
+
+      group.appendChild(editBtn);
+
       /* 削除 */
 
       const deleteBtn =
@@ -902,13 +958,22 @@ onSnapshot(
 );
 
 
+/* 初期表示 */
+
 renderCalendar();
+
+
+/* グローバル */
 
 window.login = login;
 window.saveEvent = saveEvent;
 window.closeModal = closeModal;
 window.changeMonth = changeMonth;
 window.openModal = openModal;
+
+
+/* Service Worker */
+
 if ("serviceWorker" in navigator) {
 
   navigator.serviceWorker
