@@ -1,23 +1,30 @@
 // =========================
-// 家族予定アプリ（完成版）
-// 背景色分け対応
+// 家族予定アプリ（復旧対応版）
 // =========================
 
 const APP_PASSWORD = "1980";
 
 let currentDate = new Date();
-let events = JSON.parse(localStorage.getItem("familyEvents") || "{}");
+
+// 🔥 旧データも救済（ここ重要）
+let events =
+  JSON.parse(localStorage.getItem("familyEvents")) ||
+  JSON.parse(localStorage.getItem("events")) ||
+  {};
+
+// 保存キー統一
+const STORAGE_KEY = "familyEvents";
 
 // =========================
-// 名前カラー（背景色）
+// 名前カラー
 // =========================
 const nameColors = {
-  "パパ": "#4a90e2",     // 青
-  "ママ": "#f1c40f",     // 黄
-  "トウカ": "#7ed6ff",   // ライトブルー
-  "ヒヨリ": "#ff7eb6",   // ピンク
-  "祖母": "#9b59b6",     // 紫
-  "祖父": "#95a5a6"      // グレー
+  "パパ": "#4a90e2",
+  "ママ": "#f1c40f",
+  "トウカ": "#7ed6ff",
+  "ヒヨリ": "#ff7eb6",
+  "祖母": "#9b59b6",
+  "祖父": "#95a5a6"
 };
 
 // =========================
@@ -36,19 +43,16 @@ window.login = function () {
   const pass = document.getElementById("passwordInput").value.trim();
 
   if (pass === APP_PASSWORD) {
-
     document.getElementById("loginScreen").style.display = "none";
-
     renderCalendar();
     renderMonthlyList();
-
   } else {
     alert("パスワードが違います");
   }
 };
 
 // =========================
-// カレンダー表示
+// カレンダー
 // =========================
 function renderCalendar() {
 
@@ -78,7 +82,6 @@ function renderCalendar() {
       <div>${day}</div>
     `;
 
-    // ★予定表示（背景色バッジ）
     dayEvents.forEach(e => {
 
       const bg = nameColors[e.name] || "#ccc";
@@ -91,7 +94,6 @@ function renderCalendar() {
           padding:2px 5px;
           margin-top:2px;
           border-radius:5px;
-          line-height:1.2;
         ">
           ${e.time} ${e.name} ${e.schedule}
         </div>
@@ -131,18 +133,15 @@ function renderMonthlyList() {
 
         list.innerHTML += `
           <div style="margin-bottom:6px;">
-            
             <span style="
               background:${bg};
               color:#fff;
               padding:3px 6px;
               border-radius:5px;
-              font-size:12px;
               margin-right:6px;
             ">
               ${e.name}
             </span>
-
             ${dateKey} ${e.time}：${e.schedule}
           </div>
         `;
@@ -168,12 +167,9 @@ window.changeMonth = function (offset) {
 // モーダル
 // =========================
 window.openModal = function (dateKey) {
-
   window.selectedDate = dateKey;
-
   document.getElementById("modal").style.display = "block";
   document.getElementById("selectedDate").textContent = dateKey;
-
   renderDayEvents(dateKey);
 };
 
@@ -208,7 +204,7 @@ window.saveEvent = function () {
     time: `${hour}:${minute}`
   });
 
-  localStorage.setItem("familyEvents", JSON.stringify(events));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
 
   renderCalendar();
   renderMonthlyList();
@@ -260,7 +256,7 @@ window.deleteEvent = function (dateKey, index) {
     delete events[dateKey];
   }
 
-  localStorage.setItem("familyEvents", JSON.stringify(events));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
 
   renderCalendar();
   renderMonthlyList();
