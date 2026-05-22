@@ -85,7 +85,7 @@ let currentDate = new Date();
 let selectedDay = null;
 
 let events = {};
-
+let editingId = null;
 
 /* 時間 */
 
