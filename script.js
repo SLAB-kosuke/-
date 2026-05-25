@@ -1,7 +1,4 @@
-// =========================
-// Firebase
-// =========================
-
+```javascript
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
@@ -14,10 +11,7 @@ import {
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// =========================
-// Firebase設定
-// =========================
-
+// Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBGeCs9-gsS66uCZ9HqEsbSqNv4_dOE5Bg",
   authDomain: "family-calendar-38bf7.firebaseapp.com",
@@ -29,21 +23,13 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
-
 const eventsRef = collection(db, "events");
 
-// =========================
 // パスワード
-// =========================
-
 const APP_PASSWORD = "1980";
 
-// =========================
-// 名前カラー固定
-// =========================
-
+// 色
 const nameColors = {
   "パパ": "#2196f3",
   "ママ": "#f1c40f",
@@ -54,15 +40,10 @@ const nameColors = {
 };
 
 let currentDate = new Date();
-
 let events = [];
-
 let editingId = null;
 
-// =========================
 // 初期化
-// =========================
-
 document.addEventListener("DOMContentLoaded", () => {
 
   const hour =
@@ -84,32 +65,30 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("repeatType")
     .addEventListener("change", function () {
 
-      const repeatEnd =
+      const end =
         document.getElementById("repeatEnd");
 
       if (this.value === "other") {
 
-        repeatEnd.style.display = "block";
+        end.style.display = "block";
 
       } else {
 
-        repeatEnd.style.display = "none";
+        end.style.display = "none";
       }
     });
 
   loadEvents();
 });
 
-// =========================
 // ログイン
-// =========================
-
 window.login = function () {
 
   const pass =
     document
       .getElementById("passwordInput")
-      .value.trim();
+      .value
+      .trim();
 
   if (pass === APP_PASSWORD) {
 
@@ -123,10 +102,7 @@ window.login = function () {
   }
 };
 
-// =========================
-// Firestore同期
-// =========================
-
+// Firestore読込
 function loadEvents() {
 
   onSnapshot(eventsRef, snapshot => {
@@ -146,19 +122,16 @@ function loadEvents() {
   });
 }
 
-// =========================
 // カレンダー
-// =========================
-
 function renderCalendar() {
 
   const calendar =
     document.getElementById("calendar");
 
+  calendar.innerHTML = "";
+
   const monthYear =
     document.getElementById("monthYear");
-
-  calendar.innerHTML = "";
 
   const year =
     currentDate.getFullYear();
@@ -186,13 +159,13 @@ function renderCalendar() {
       `${year}-${month + 1}-${day}`;
 
     const dayEvents =
-      getEventsForDate(dateKey);
+      events.filter(e => e.date === dateKey);
 
     let html = `
       <div class="day"
-        onclick="openModal('${dateKey}')">
+      onclick="openModal('${dateKey}')">
 
-        <div class="date">${day}</div>
+      <div>${day}</div>
     `;
 
     dayEvents.forEach(e => {
@@ -200,11 +173,11 @@ function renderCalendar() {
       html += `
         <div style="
           background:${e.color};
-          color:#fff;
-          font-size:11px;
-          padding:2px 5px;
+          color:white;
+          padding:2px;
           margin-top:2px;
           border-radius:5px;
+          font-size:11px;
         ">
           ${e.time}
           ${e.name}
@@ -218,61 +191,7 @@ function renderCalendar() {
   }
 }
 
-// =========================
-// 繰り返し
-// =========================
-
-function getEventsForDate(dateKey) {
-
-  const target =
-    new Date(dateKey);
-
-  return events.filter(e => {
-
-    const base =
-      new Date(e.date);
-
-    if (e.date === dateKey)
-      return true;
-
-    if (e.repeat === "weekly") {
-
-      return (
-        base.getDay() ===
-        target.getDay()
-      );
-    }
-
-    if (e.repeat === "monthly") {
-
-      return (
-        base.getDate() ===
-        target.getDate()
-      );
-    }
-
-    if (e.repeat === "other") {
-
-      if (!e.repeatEnd)
-        return false;
-
-      const end =
-        new Date(e.repeatEnd);
-
-      return (
-        target >= base &&
-        target <= end
-      );
-    }
-
-    return false;
-  });
-}
-
-// =========================
 // 月一覧
-// =========================
-
 function renderMonthlyList() {
 
   const list =
@@ -280,23 +199,15 @@ function renderMonthlyList() {
 
   list.innerHTML = "";
 
-  if (events.length === 0) {
-
-    list.innerHTML =
-      "<p>予定はありません</p>";
-
-    return;
-  }
-
   events.forEach(e => {
 
     list.innerHTML += `
       <div style="
         background:${e.color};
-        color:#fff;
+        color:white;
         padding:6px;
-        margin-bottom:6px;
-        border-radius:6px;
+        margin-bottom:5px;
+        border-radius:5px;
       ">
         ${e.date}
         ${e.time}
@@ -307,10 +218,7 @@ function renderMonthlyList() {
   });
 }
 
-// =========================
 // モーダル
-// =========================
-
 window.openModal = function(dateKey) {
 
   window.selectedDate = dateKey;
@@ -333,10 +241,7 @@ window.closeModal = function() {
     .style.display = "none";
 };
 
-// =========================
 // 保存
-// =========================
-
 window.saveEvent = async function () {
 
   const name =
@@ -357,13 +262,9 @@ window.saveEvent = async function () {
   const repeatEnd =
     document.getElementById("repeatEnd").value;
 
-  const color =
-    nameColors[name] || "#4a90e2";
-
   if (!name || !schedule) {
 
-    alert("名前と予定を入力してください");
-
+    alert("入力してください");
     return;
   }
 
@@ -381,41 +282,28 @@ window.saveEvent = async function () {
 
     repeatEnd,
 
-    color
+    color:
+      nameColors[name] || "#4a90e2"
   };
 
-  try {
+  if (editingId) {
 
-    if (editingId) {
+    await updateDoc(
+      doc(db, "events", editingId),
+      data
+    );
 
-      await updateDoc(
-        doc(db, "events", editingId),
-        data
-      );
+    editingId = null;
 
-      editingId = null;
+  } else {
 
-    } else {
-
-      await addDoc(eventsRef, data);
-    }
-
-    document.getElementById("schedule").value = "";
-
-    closeModal();
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("保存失敗");
+    await addDoc(eventsRef, data);
   }
+
+  closeModal();
 };
 
-// =========================
 // 日別
-// =========================
-
 function renderDayEvents(dateKey) {
 
   const box =
@@ -426,20 +314,12 @@ function renderDayEvents(dateKey) {
   const dayEvents =
     events.filter(e => e.date === dateKey);
 
-  if (dayEvents.length === 0) {
-
-    box.innerHTML =
-      "<p>予定なし</p>";
-
-    return;
-  }
-
   dayEvents.forEach(e => {
 
     box.innerHTML += `
       <div style="
         background:${e.color};
-        color:#fff;
+        color:white;
         padding:6px;
         margin-bottom:6px;
         border-radius:6px;
@@ -450,18 +330,15 @@ function renderDayEvents(dateKey) {
         ：${e.schedule}
 
         <div style="
-          margin-top:5px;
           display:flex;
           gap:5px;
+          margin-top:5px;
         ">
 
           <button
             style="
               background:#f1c40f;
               color:black;
-              border:none;
-              border-radius:5px;
-              padding:5px 10px;
             "
             onclick="editEvent('${e.id}')">
 
@@ -473,9 +350,6 @@ function renderDayEvents(dateKey) {
             style="
               background:#e74c3c;
               color:white;
-              border:none;
-              border-radius:5px;
-              padding:5px 10px;
             "
             onclick="deleteEvent('${e.id}')">
 
@@ -489,31 +363,31 @@ function renderDayEvents(dateKey) {
     `;
   });
 }
-```javascript
-// =========================
-// 編集
-// =========================
 
+// 編集
 window.editEvent = function(id) {
 
-  const e = events.find(v => v.id === id);
+  const e =
+    events.find(v => v.id === id);
 
   if (!e) return;
 
   editingId = id;
 
-  document.getElementById("name").value = e.name;
+  document.getElementById("name").value =
+    e.name;
 
   document.getElementById("schedule").value =
     e.schedule;
 
-  const timeParts = e.time.split(":");
+  const parts =
+    e.time.split(":");
 
   document.getElementById("hour").value =
-    timeParts[0];
+    parts[0];
 
   document.getElementById("minute").value =
-    timeParts[1];
+    parts[1];
 
   document.getElementById("repeatType").value =
     e.repeat || "none";
@@ -525,15 +399,8 @@ window.editEvent = function(id) {
     "flex";
 };
 
-  openModal(e.date);
-};
-
-// =========================
 // 削除
-// =========================
-
-window.deleteEvent =
-async function(id) {
+window.deleteEvent = async function(id) {
 
   if (!confirm("削除しますか？"))
     return;
@@ -543,10 +410,7 @@ async function(id) {
   );
 };
 
-// =========================
 // 月変更
-// =========================
-
 window.changeMonth = function(offset) {
 
   currentDate.setMonth(
@@ -555,4 +419,4 @@ window.changeMonth = function(offset) {
 
   renderCalendar();
 };
-
+```
