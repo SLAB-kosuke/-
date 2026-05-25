@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -17,13 +18,9 @@
 
   <meta name="theme-color" content="#4a90e2">
 
-  <link rel="apple-touch-icon" href="icon-192.png">
-
 </head>
 
 <body>
-
-<!-- ログイン -->
 
 <div id="loginScreen">
 
@@ -31,13 +28,11 @@
 
     <h2>我が家の予定</h2>
 
-    <p>4桁パスワード</p>
-
     <input
       type="password"
       id="passwordInput"
       maxlength="4"
-      placeholder="1234">
+      placeholder="4桁パスワード">
 
     <button onclick="login()">
       ログイン
@@ -47,20 +42,18 @@
 
 </div>
 
-<!-- 本体 -->
-
 <h1>家族スケジュール</h1>
 
 <div class="calendar-header">
 
   <button onclick="changeMonth(-1)">
-    ◀ 前月
+    ◀
   </button>
 
   <h2 id="monthYear"></h2>
 
   <button onclick="changeMonth(1)">
-    次月 ▶
+    ▶
   </button>
 
 </div>
@@ -85,7 +78,7 @@
 
     <select id="name">
 
-      <option value="">名前を選択</option>
+      <option value="">名前</option>
 
       <option value="パパ">パパ</option>
       <option value="ママ">ママ</option>
@@ -101,7 +94,6 @@
       id="schedule"
       placeholder="予定">
 
-    <!-- 時間 -->
     <div style="display:flex; gap:5px;">
 
       <select id="hour"></select>
@@ -115,7 +107,6 @@
 
     </div>
 
-    <!-- 繰り返し -->
     <select id="repeatType">
 
       <option value="none">
@@ -136,16 +127,12 @@
 
     </select>
 
-    <!-- 終了日 -->
     <input
       type="date"
       id="repeatEnd"
       style="display:none;">
 
-    <!-- 色 -->
-    <p style="font-size:12px;">
-      予定カラー
-    </p>
+    <p>予定カラー</p>
 
     <input
       type="color"
@@ -154,20 +141,12 @@
 
     <div class="actions">
 
-      <button
-        class="close-btn"
-        onclick="closeModal()">
-
+      <button onclick="closeModal()">
         閉じる
-
       </button>
 
-      <button
-        class="save-btn"
-        onclick="saveEvent()">
-
-        決定
-
+      <button onclick="saveEvent()">
+        保存
       </button>
 
     </div>
@@ -180,10 +159,8 @@
 
 </div>
 
-<!-- script -->
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 </body>
 </html>
 ```
-
