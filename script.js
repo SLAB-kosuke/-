@@ -1,4 +1,3 @@
-```javascript
 // =========================
 // Firebase
 // =========================
@@ -495,6 +494,11 @@ function renderDayEvents(dateKey) {
 // 編集
 // =========================
 
+```javascript
+// =========================
+// 編集
+// =========================
+
 window.editEvent = function(id) {
 
   const e =
@@ -523,6 +527,10 @@ window.editEvent = function(id) {
   document.getElementById("repeatEnd").value =
     e.repeatEnd || "";
 
+  document.getElementById("modal").style.display =
+    "flex";
+};
+```
   openModal(e.date);
 };
 
