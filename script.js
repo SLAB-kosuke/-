@@ -91,6 +91,7 @@ document
   } else {
 
     repeatEnd.style.display = "none";
+    repeatEnd.value = ""; // ←これ重要（残り防止）
   }
 });
 
