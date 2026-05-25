@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -101,52 +102,56 @@
       id="schedule"
       placeholder="予定">
 
-    <select id="hour"></select>
+    <!-- 時間 -->
+    <div style="display:flex; gap:5px;">
 
-    <select id="minute">
+      <select id="hour"></select>
 
-      <option value="00">00</option>
-      <option value="30">30</option>
+      <select id="minute">
+
+        <option value="00">00</option>
+        <option value="30">30</option>
+
+      </select>
+
+    </div>
+
+    <!-- 繰り返し -->
+    <select id="repeatType">
+
+      <option value="none">
+        繰り返しなし
+      </option>
+
+      <option value="weekly">
+        毎週
+      </option>
+
+      <option value="monthly">
+        毎月
+      </option>
+
+      <option value="other">
+        その他
+      </option>
 
     </select>
 
-    <select id="repeatType">
-```html
-<select id="repeatType">
+    <!-- 終了日 -->
+    <input
+      type="date"
+      id="repeatEnd"
+      style="display:none;">
 
-  <option value="none">
-    繰り返しなし
-  </option>
+    <!-- 色 -->
+    <p style="font-size:12px;">
+      予定カラー
+    </p>
 
-  <option value="weekly">
-    毎週
-  </option>
-
-  <option value="monthly">
-    毎月
-  </option>
-
-  <option value="other">
-    その他
-  </option>
-
-</select>
-
-<input
-  type="date"
-  id="repeatEnd"
-  placeholder="終了日">
-
-<p style="font-size:12px;">
-  予定カラー
-</p>
-
-<input
-  type="color"
-  id="eventColor"
-  value="#4a90e2">
-```
-
+    <input
+      type="color"
+      id="eventColor"
+      value="#4a90e2">
 
     <div class="actions">
 
@@ -175,8 +180,7 @@
   </div>
 
 </div>
- <!-- Firebase -->
-```html
+
 <!-- script -->
 <script src="script.js"></script>
 
