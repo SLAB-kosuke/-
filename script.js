@@ -1,3 +1,4 @@
+```javascript
 // =========================
 // Firebase
 // =========================
@@ -553,3 +554,4 @@ window.changeMonth = function(offset) {
   renderCalendar();
 };
 ```
+
