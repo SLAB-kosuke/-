@@ -1,9 +1,9 @@
-
+```javascript
 // =========================
 // Firebase
 // =========================
 
-import { initializeApp }from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getFirestore,
@@ -13,8 +13,7 @@ import {
   deleteDoc,
   doc,
   updateDoc
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // =========================
 // Firebase設定
@@ -37,8 +36,23 @@ const db = getFirestore(app);
 const eventsRef = collection(db, "events");
 
 // =========================
+// パスワード
+// =========================
 
 const APP_PASSWORD = "1980";
+
+// =========================
+// 名前カラー固定
+// =========================
+
+const nameColors = {
+  "パパ": "#2196f3",
+  "ママ": "#f1c40f",
+  "トウカ": "#7FDBFF",
+  "ヒヨリ": "#ff69b4",
+  "祖母": "#9b59b6",
+  "祖父": "#808080"
+};
 
 let currentDate = new Date();
 
@@ -52,7 +66,6 @@ let editingId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 時間生成
   const hour =
     document.getElementById("hour");
 
@@ -68,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // 繰り返し変更
   document
     .getElementById("repeatType")
     .addEventListener("change", function () {
@@ -85,11 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
         repeatEnd.style.display = "none";
       }
     });
-
-  // 初期状態反映
-  document
-    .getElementById("repeatType")
-    .dispatchEvent(new Event("change"));
 
   loadEvents();
 });
@@ -226,11 +233,9 @@ function getEventsForDate(dateKey) {
     const base =
       new Date(e.date);
 
-    // 通常
     if (e.date === dateKey)
       return true;
 
-    // 毎週
     if (e.repeat === "weekly") {
 
       return (
@@ -239,7 +244,6 @@ function getEventsForDate(dateKey) {
       );
     }
 
-    // 毎月
     if (e.repeat === "monthly") {
 
       return (
@@ -248,7 +252,6 @@ function getEventsForDate(dateKey) {
       );
     }
 
-    // その他
     if (e.repeat === "other") {
 
       if (!e.repeatEnd)
@@ -356,7 +359,7 @@ window.saveEvent = async function () {
     document.getElementById("repeatEnd").value;
 
   const color =
-    document.getElementById("eventColor").value;
+    nameColors[name] || "#4a90e2";
 
   if (!name || !schedule) {
 
@@ -398,7 +401,6 @@ window.saveEvent = async function () {
       await addDoc(eventsRef, data);
     }
 
-    // 初期化
     document.getElementById("schedule").value = "";
 
     closeModal();
@@ -454,12 +456,32 @@ function renderDayEvents(dateKey) {
           gap:5px;
         ">
 
-          <button onclick="editEvent('${e.id}')">
+          <button
+            style="
+              background:#f1c40f;
+              color:black;
+              border:none;
+              border-radius:5px;
+              padding:5px 10px;
+            "
+            onclick="editEvent('${e.id}')">
+
             編集
+
           </button>
 
-          <button onclick="deleteEvent('${e.id}')">
+          <button
+            style="
+              background:#e74c3c;
+              color:white;
+              border:none;
+              border-radius:5px;
+              padding:5px 10px;
+            "
+            onclick="deleteEvent('${e.id}')">
+
             削除
+
           </button>
 
         </div>
@@ -501,14 +523,6 @@ window.editEvent = function(id) {
   document.getElementById("repeatEnd").value =
     e.repeatEnd || "";
 
-  document.getElementById("eventColor").value =
-    e.color || "#4a90e2";
-
-  // その他表示更新
-  document
-    .getElementById("repeatType")
-    .dispatchEvent(new Event("change"));
-
   openModal(e.date);
 };
 
@@ -528,7 +542,7 @@ async function(id) {
 };
 
 // =========================
-// 月移動
+// 月変更
 // =========================
 
 window.changeMonth = function(offset) {
@@ -539,3 +553,4 @@ window.changeMonth = function(offset) {
 
   renderCalendar();
 };
+```
