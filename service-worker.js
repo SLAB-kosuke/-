@@ -1,38 +1,15 @@
-const CACHE_NAME = "family-calendar-v1";
+```javascript
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
 
-const urlsToCache = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./script.js"
-];
-
-self.addEventListener("install", event => {
-
+self.addEventListener('activate', event => {
   event.waitUntil(
-
-    caches.open(CACHE_NAME)
-      .then(cache => {
-
-        return cache.addAll(urlsToCache);
-
-      })
-
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => caches.delete(key))
+      )
+    )
   );
-
 });
-
-self.addEventListener("fetch", event => {
-
-  event.respondWith(
-
-    caches.match(event.request)
-      .then(response => {
-
-        return response || fetch(event.request);
-
-      })
-
-  );
-
-});
+```
