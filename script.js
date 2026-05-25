@@ -489,11 +489,6 @@ function renderDayEvents(dateKey) {
     `;
   });
 }
-
-// =========================
-// 編集
-// =========================
-
 ```javascript
 // =========================
 // 編集
@@ -501,25 +496,24 @@ function renderDayEvents(dateKey) {
 
 window.editEvent = function(id) {
 
-  const e =
-    events.find(v => v.id === id);
+  const e = events.find(v => v.id === id);
 
   if (!e) return;
 
   editingId = id;
 
-  document.getElementById("name").value =
-    e.name;
+  document.getElementById("name").value = e.name;
 
   document.getElementById("schedule").value =
     e.schedule;
 
-  const [h, m] =
-    e.time.split(":");
+  const timeParts = e.time.split(":");
 
-  document.getElementById("hour").value = h;
+  document.getElementById("hour").value =
+    timeParts[0];
 
-  document.getElementById("minute").value = m;
+  document.getElementById("minute").value =
+    timeParts[1];
 
   document.getElementById("repeatType").value =
     e.repeat || "none";
@@ -530,7 +524,7 @@ window.editEvent = function(id) {
   document.getElementById("modal").style.display =
     "flex";
 };
-```
+
   openModal(e.date);
 };
 
@@ -561,5 +555,4 @@ window.changeMonth = function(offset) {
 
   renderCalendar();
 };
-```
 
