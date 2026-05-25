@@ -29,7 +29,7 @@ const firebaseConfig = {
 
   projectId: "family-calendar-38bf7",
 
-  storageBucket: "family-calendar-38bf7.firebasestorage.app",
+  storageBucket: "family-calendar-38bf7.appspot.com"
 
   messagingSenderId: "419708212606",
 
