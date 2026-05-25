@@ -66,7 +66,6 @@ document.getElementById("hour");
 
 for (let i = 0; i < 24; i++) {
 
-```
 const h =
   String(i).padStart(2, "0");
 
@@ -75,7 +74,6 @@ hour.innerHTML += `
     ${h}
   </option>
 `;
-```
 
 }
 
@@ -83,7 +81,6 @@ document
 .getElementById("repeatType")
 .addEventListener("change", function () {
 
-```
   const repeatEnd =
     document.getElementById("repeatEnd");
 
@@ -96,7 +93,6 @@ document
     repeatEnd.style.display = "none";
   }
 });
-```
 
 loadEvents();
 });
@@ -115,17 +111,13 @@ document
 
 if (pass === APP_PASSWORD) {
 
-```
 document
   .getElementById("loginScreen")
   .style.display = "none";
-```
 
 } else {
 
-```
 alert("パスワードが違います");
-```
 
 }
 };
@@ -138,7 +130,6 @@ function loadEvents() {
 
 onSnapshot(eventsRef, snapshot => {
 
-```
 events = [];
 
 snapshot.forEach(docu => {
@@ -151,7 +142,6 @@ snapshot.forEach(docu => {
 
 renderCalendar();
 renderMonthlyList();
-```
 
 });
 }
@@ -187,20 +177,15 @@ new Date(year, month + 1, 0).getDate();
 
 for (let i = 0; i < firstDay; i++) {
 
-```
 calendar.innerHTML += `<div></div>`;
-```
 
 }
 
 for (let day = 1; day <= lastDate; day++) {
 
-```
-const dateKey =
-  `${year}-${month + 1}-${day}`;
+const dateKey =`${year}-${month + 1}-${day}`;
 
-const dayEvents =
-  getEventsForDate(dateKey);
+const dayEvents =getEventsForDate(dateKey);
 
 let html = `
   <div class="day"
@@ -229,7 +214,6 @@ dayEvents.forEach(e => {
 html += `</div>`;
 
 calendar.innerHTML += html;
-```
 
 }
 }
@@ -245,7 +229,6 @@ new Date(dateKey);
 
 return events.filter(e => {
 
-```
 const base =
   new Date(e.date);
 
@@ -288,7 +271,6 @@ if (e.repeat === "other") {
 }
 
 return false;
-```
 
 });
 }
@@ -306,18 +288,15 @@ list.innerHTML = "";
 
 if (events.length === 0) {
 
-```
 list.innerHTML =
   "<p>予定はありません</p>";
 
 return;
-```
 
 }
 
 events.forEach(e => {
 
-```
 list.innerHTML += `
   <div style="
     background:${e.color};
@@ -332,7 +311,6 @@ list.innerHTML += `
     ：${e.schedule}
   </div>
 `;
-```
 
 });
 }
@@ -389,17 +367,14 @@ document.getElementById("repeatEnd").value;
 
 if (!name || !schedule) {
 
-```
 alert("名前と予定を入力してください");
 
 return;
-```
 
 }
 
 const data = {
 
-```
 date: window.selectedDate,
 
 name,
@@ -414,13 +389,11 @@ repeatEnd,
 
 color:
   nameColors[name] || "#4a90e2"
-```
 
 };
 
 try {
 
-```
 if (editingId) {
 
   await updateDoc(
@@ -450,15 +423,12 @@ document.getElementById("repeatType").value =
 document.getElementById("repeatEnd").value = "";
 
 closeModal();
-```
 
 } catch (error) {
 
-```
 console.error(error);
 
 alert("保存失敗");
-```
 
 }
 };
@@ -479,18 +449,15 @@ events.filter(e => e.date === dateKey);
 
 if (dayEvents.length === 0) {
 
-```
 box.innerHTML =
   "<p>予定なし</p>";
 
 return;
-```
 
 }
 
 dayEvents.forEach(e => {
 
-```
 box.innerHTML += `
   <div style="
     background:${e.color};
@@ -542,7 +509,6 @@ box.innerHTML += `
 
   </div>
 `;
-```
 
 });
 }
