@@ -57,4 +57,213 @@
     }
 
     .primary {
+      background: #4A90E2;
+      color: white;
+    }
+
+    .bottom-add {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #4A90E2;
+      color: white;
+      font-size: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    #eventList {
+      display: none;
+      background: white;
+      margin: 12px;
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input,
+    select {
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .fc-event {
+      border: none !important;
+      padding: 2px 4px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #periodFields {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="loginScreen">
+    <h1>我が家の予定</h1>
+
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="パスワード"
+    />
+
+    <button class="primary" onclick="login()">
+      ログイン
+    </button>
+  </div>
+
+  <div id="mainApp">
+
+    <div class="header">
+      <h2>我が家の予定</h2>
+
+      <div class="header-buttons">
+        <button onclick="goToday()">今日</button>
+        <button onclick="toggleList()">一覧</button>
+      </div>
+    </div>
+
+    <div id="calendar"></div>
+
+    <div id="eventList"></div>
+
+    <button
+      class="bottom-add"
+      onclick="openModal()"
+    >
+      ＋
+    </button>
+
+  </div>
+
+  <div class="modal" id="eventModal">
+
+    <div class="modal-content">
+
+      <h3>予定追加</h3>
+
+      <select id="eventName">
+        <option value="パパ">パパ</option>
+        <option value="ママ">ママ</option>
+        <option value="トウカ">トウカ</option>
+        <option value="ヒヨリ">ヒヨリ</option>
+        <option value="祖母">祖母</option>
+        <option value="祖父">祖父</option>
+        <option value="共通">共通</option>
+      </select>
+
+      <input
+        type="text"
+        id="eventTitle"
+        placeholder="タイトル"
+      />
+
+      <input
+        type="date"
+        id="eventDate"
+      />
+
+      <input
+        type="time"
+        id="eventTime"
+      />
+
+      <select id="repeatType">
+        <option value="none">なし</option>
+        <option value="weekly">毎週</option>
+        <option value="monthly">毎月</option>
+        <option value="yearly">毎年</option>
+        <option value="period">期間</option>
+      </select>
+
+      <div id="periodFields">
+
+        <input
+          type="date"
+          id="periodStart"
+          placeholder="開始日"
+        />
+
+        <input
+          type="date"
+          id="periodEnd"
+          placeholder="終了日"
+        />
+
+      </div>
+
+      <button
+        class="primary"
+        onclick="saveEvent()"
+      >
+        保存
+      </button>
+
+      <button onclick="closeModal()">
+        閉じる
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="modal" id="detailModal">
+
+    <div class="modal-content">
+
+      <h3 id="detailTitle"></h3>
+
+      <div
+        class="action-buttons"
+        id="detailButtons"
+      ></div>
+
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+  <script type="module" src="script.js"></script>
+
+</body>
 </html>
