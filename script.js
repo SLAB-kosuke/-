@@ -211,12 +211,12 @@ window.saveEvent = async function () {
     );
 
     alert("Firestore保存OK");
-
-    closeModal();
-
+    
     calendar.removeAllEvents();
 
     await loadEvents();
+
+    closeModal();
 
     alert("保存しました");
 
@@ -307,11 +307,19 @@ function generatePeriodEvents(data, id) {
 
 function formatTitle(data) {
 
+  let text = "";
+
   if (data.time) {
 
-    return `${data.time} ${data.title}`;
+    text += `${data.time} `;
 
   }
+
+  text += `[${data.name}] ${data.title}`;
+
+  return text;
+
+}
 
   return data.title;
 
