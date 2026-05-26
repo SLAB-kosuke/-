@@ -316,10 +316,7 @@ function formatTitle(data) {
 
 }
 
-  return data.title;
-
-}
-
+ 
 function generateList() {
 
   const list =
