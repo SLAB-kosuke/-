@@ -453,7 +453,7 @@ document.getElementById("dayEvents");
 box.innerHTML = "";
 
 const dayEvents =
-events.filter(e => e.date === dateKey);
+getEventsForDate(dateKey);
 
 if (dayEvents.length === 0) {
 
