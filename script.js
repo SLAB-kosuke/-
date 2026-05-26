@@ -42,22 +42,17 @@ window.login = function () {
   const password =
     document.getElementById("passwordInput").value;
 
-  if (password === PASSWORD) {
+  if (password === "1980") {
 
-    document.getElementById("loginScreen").style.display =
-      "none";
+    document.getElementById("loginScreen").style.display = "none";
 
-    document.getElementById("mainApp").style.display =
-      "block";
-
-    initCalendar();
+    document.getElementById("mainApp").style.display = "block";
 
   } else {
 
     alert("パスワードが違います");
 
   }
-
 };
 
 function initCalendar() {
