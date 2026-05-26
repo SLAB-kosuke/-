@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>我が家の予定</title>
 
-   <meta name="theme-color" content="#4A90E2" />
+  <meta name="theme-color" content="#4A90E2" />
 
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/main.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/main.min.css" rel="stylesheet" />
 
   <style>
     body {
@@ -139,15 +139,9 @@
   <div id="loginScreen">
     <h1>我が家の予定</h1>
 
-    <input
-      type="password"
-      id="passwordInput"
-      placeholder="パスワード"
-    />
+    <input type="password" id="passwordInput" placeholder="パスワード" />
 
-    <button class="primary" onclick="login()">
-      ログイン
-    </button>
+    <button class="primary" onclick="login()">ログイン</button>
   </div>
 
   <div id="mainApp">
@@ -165,15 +159,11 @@
 
     <div id="eventList"></div>
 
-    <button
-      class="bottom-add"
-      onclick="openModal()"
-    >
-      ＋
-    </button>
+    <button class="bottom-add" onclick="openModal()">＋</button>
 
   </div>
 
+  <!-- 予定追加 -->
   <div class="modal" id="eventModal">
 
     <div class="modal-content">
@@ -190,22 +180,39 @@
         <option value="共通">共通</option>
       </select>
 
-      <input
-        type="text"
-        id="eventTitle"
-        placeholder="タイトル"
-      />
+      <input type="text" id="eventTitle" placeholder="タイトル" />
 
-      <input
-        type="date"
-        id="eventDate"
-      />
+      <input type="date" id="eventDate" />
 
-     <input
-  type="time"
-  id="eventTime"
-  step="1800"
-/>
+      <!-- ✅ 修正：時間セレクトのみ（壊れてたinput削除） -->
+      <select id="eventTime">
+        <option value="">時間なし</option>
+
+        <option value="00:00">00:00</option><option value="00:30">00:30</option>
+        <option value="01:00">01:00</option><option value="01:30">01:30</option>
+        <option value="02:00">02:00</option><option value="02:30">02:30</option>
+        <option value="03:00">03:00</option><option value="03:30">03:30</option>
+        <option value="04:00">04:00</option><option value="04:30">04:30</option>
+        <option value="05:00">05:00</option><option value="05:30">05:30</option>
+        <option value="06:00">06:00</option><option value="06:30">06:30</option>
+        <option value="07:00">07:00</option><option value="07:30">07:30</option>
+        <option value="08:00">08:00</option><option value="08:30">08:30</option>
+        <option value="09:00">09:00</option><option value="09:30">09:30</option>
+        <option value="10:00">10:00</option><option value="10:30">10:30</option>
+        <option value="11:00">11:00</option><option value="11:30">11:30</option>
+        <option value="12:00">12:00</option><option value="12:30">12:30</option>
+        <option value="13:00">13:00</option><option value="13:30">13:30</option>
+        <option value="14:00">14:00</option><option value="14:30">14:30</option>
+        <option value="15:00">15:00</option><option value="15:30">15:30</option>
+        <option value="16:00">16:00</option><option value="16:30">16:30</option>
+        <option value="17:00">17:00</option><option value="17:30">17:30</option>
+        <option value="18:00">18:00</option><option value="18:30">18:30</option>
+        <option value="19:00">19:00</option><option value="19:30">19:30</option>
+        <option value="20:00">20:00</option><option value="20:30">20:30</option>
+        <option value="21:00">21:00</option><option value="21:30">21:30</option>
+        <option value="22:00">22:00</option><option value="22:30">22:30</option>
+        <option value="23:00">23:00</option><option value="23:30">23:30</option>
+      </select>
 
       <select id="repeatType">
         <option value="none">なし</option>
@@ -216,56 +223,28 @@
       </select>
 
       <div id="periodFields">
-
-        <input
-          type="date"
-          id="periodStart"
-          placeholder="開始日"
-        />
-
-        <input
-          type="date"
-          id="periodEnd"
-          placeholder="終了日"
-        />
-
+        <input type="date" id="periodStart" />
+        <input type="date" id="periodEnd" />
       </div>
 
-      <button
-        class="primary"
-        onclick="saveEvent()"
-      >
-        保存
-      </button>
-
-      <button onclick="closeModal()">
-        閉じる
-      </button>
+      <button class="primary" onclick="saveEvent()">保存</button>
+      <button onclick="closeModal()">閉じる</button>
 
     </div>
-
   </div>
 
+  <!-- 詳細 -->
   <div class="modal" id="detailModal">
-
     <div class="modal-content">
-
       <h3 id="detailTitle"></h3>
-
-      <div
-        class="action-buttons"
-        id="detailButtons"
-      ></div>
-
+      <div class="action-buttons" id="detailButtons"></div>
     </div>
-
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/locales-all.global.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/locales-all.global.min.js"></script>
-
-<script type="module" src="script.js"></script>
+  <script type="module" src="script.js"></script>
 
 </body>
 </html>
