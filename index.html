@@ -1,157 +1,60 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>我が家の予定</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4A90E2" />
 
-  <link rel="manifest" href="manifest.json">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
 
-  <meta name="theme-color" content="#4a90e2">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f5f5f5;
+    }
 
-</head>
+    #loginScreen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 12px;
+    }
 
-<body>
+    #mainApp {
+      display: none;
+      padding-bottom: 80px;
+    }
 
-<div id="loginScreen">
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid #ddd;
+    }
 
-  <div class="login-box">
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+    }
 
-    <h2>我が家の予定</h2>
-<input
-      type="password"
-      id="passwordInput"
-      maxlength="4"
-      placeholder="4桁パスワード">
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-    <button onclick="login()">
-      ログイン
-    </button>
-
-  </div>
-
-</div>
-
-    
-<h1>家族スケジュール</h1>
-
-<div class="calendar-header">
-
-  <button onclick="changeMonth(-1)">
-    ◀
-  </button>
-
-  <h2 id="monthYear"></h2>
-
-  <button onclick="changeMonth(1)">
-    ▶
-  </button>
-
-</div>
-
-<div class="calendar" id="calendar"></div>
-
-<div class="schedule-list">
-
-  <h2>当月の予定一覧</h2>
-
-  <div id="monthlyList"></div>
-
-</div>
-
-<!-- モーダル -->
-
-<div class="modal" id="modal">
-
-  <div class="modal-content">
-
-    <h2 id="selectedDate"></h2>
-
-    <select id="name">
-
-      <option value="">名前</option>
-
-      <option value="パパ">パパ</option>
-      <option value="ママ">ママ</option>
-      <option value="トウカ">トウカ</option>
-      <option value="ヒヨリ">ヒヨリ</option>
-      <option value="祖母">祖母</option>
-      <option value="祖父">祖父</option>
-
-    </select>
-
-    <input
-      type="text"
-      id="schedule"
-      placeholder="予定">
-
-    <div style="display:flex; gap:5px;">
-
-      <select id="hour"></select>
-
-      <select id="minute">
-
-        <option value="00">00</option>
-        <option value="30">30</option>
-
-      </select>
-
-    </div>
-
-    <select id="repeatType">
-
-      <option value="none">
-        繰り返しなし
-      </option>
-
-      <option value="weekly">
-        毎週
-      </option>
-
-      <option value="monthly">
-        毎月
-      </option>
-
-      <option value="other">
-        その他
-      </option>
-
-    </select>
-
-    <input
-      type="date"
-      id="repeatEnd"
-      style="display:none;">
-
-    <div class="actions">
-
-      <button onclick="closeModal()">
-        閉じる
-      </button>
-
-      <button onclick="saveEvent()">
-        保存
-      </button>
-
-    </div>
-
-    <h3>この日の予定</h3>
-
-    <div id="dayEvents"></div>
-
-  </div>
-
-</div>
-
-<script type="module" src="script.js?v=600"></script>
-
-</body>
+    .primary {
 </html>
