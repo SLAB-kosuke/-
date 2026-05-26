@@ -167,60 +167,69 @@ window.toggleList = function () {
 
 window.saveEvent = async function () {
 
-  const name =
-    document.getElementById("eventName").value;
+  try {
 
-  const title =
-    document.getElementById("eventTitle").value;
+    const name =
+      document.getElementById("eventName").value;
 
-  const date =
-    document.getElementById("eventDate").value;
+    const title =
+      document.getElementById("eventTitle").value;
 
-  const time =
-    document.getElementById("eventTime").value;
+    const date =
+      document.getElementById("eventDate").value;
 
-  const repeatType =
-    document.getElementById("repeatType").value;
+    const time =
+      document.getElementById("eventTime").value;
 
-  const periodStart =
-    document.getElementById("periodStart").value;
+    const repeatType =
+      document.getElementById("repeatType").value;
 
-  const periodEnd =
-    document.getElementById("periodEnd").value;
+    const periodStart =
+      document.getElementById("periodStart").value;
 
-  if (!title || !date) {
+    const periodEnd =
+      document.getElementById("periodEnd").value;
 
-    alert("タイトルと日付を入力してください");
+    if (!title || !date) {
 
-    return;
+      alert("タイトルと日付を入力してください");
+
+      return;
+
+    }
+
+    await addDoc(
+      collection(db, "events_v2"),
+      {
+        name,
+        title,
+        date,
+        time,
+        repeatType,
+        periodStart,
+        periodEnd,
+        color: COLORS[name],
+        createdAt: Date.now()
+      }
+    );
+
+    closeModal();
+
+    calendar.removeAllEvents();
+
+    loadEvents();
+
+    alert("保存しました");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("保存失敗");
 
   }
 
-  await addDoc(collection(db, "events_v2"), {
-
-    name,
-    title,
-    date,
-    time,
-    repeatType,
-
-    periodStart,
-    periodEnd,
-
-    color: COLORS[name],
-
-    createdAt: Date.now()
-
-  });
-
-  closeModal();
-
-  calendar.removeAllEvents();
-
-  loadEvents();
-
 };
-
 async function loadEvents() {
 
   const snapshot =
