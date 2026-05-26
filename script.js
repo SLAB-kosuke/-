@@ -374,6 +374,11 @@ return;
 
 }
 
+// ★ 繰り返し用グループID
+const groupId =
+editingId ||
+crypto.randomUUID();
+
 const data = {
 
 date: window.selectedDate,
@@ -387,6 +392,8 @@ time: `${hour}:${minute}`,
 repeat,
 
 repeatEnd,
+
+groupId,
 
 color:
   nameColors[name] || "#4a90e2"
@@ -409,7 +416,7 @@ if (editingId) {
   await addDoc(eventsRef, data);
 }
 
-// 入力リセット
+// リセット
 document.getElementById("name").value = "";
 
 document.getElementById("schedule").value = "";
@@ -476,6 +483,7 @@ box.innerHTML += `
       margin-top:5px;
       display:flex;
       gap:5px;
+      flex-wrap:wrap;
     ">
 
       <button
@@ -500,9 +508,37 @@ box.innerHTML += `
           border-radius:5px;
           padding:5px 10px;
         "
-        onclick="deleteEvent('${e.id}')">
+        onclick="deleteEvent('${e.id}','single')">
 
-        削除
+        当日削除
+
+      </button>
+
+      <button
+        style="
+          background:#9b59b6;
+          color:white;
+          border:none;
+          border-radius:5px;
+          padding:5px 10px;
+        "
+        onclick="deleteEvent('${e.id}','future')">
+
+        以降削除
+
+      </button>
+
+      <button
+        style="
+          background:#34495e;
+          color:white;
+          border:none;
+          border-radius:5px;
+          padding:5px 10px;
+        "
+        onclick="deleteEvent('${e.id}','all')">
+
+        全部削除
 
       </button>
 
@@ -555,14 +591,96 @@ document.getElementById("modal").style.display =
 // =========================
 
 window.deleteEvent =
-async function(id) {
+async function(id, mode) {
 
-if (!confirm("削除しますか？"))
-return;
+const target =
+events.find(e => e.id === id);
 
-await deleteDoc(
-doc(db, "events", id)
-);
+if (!target) return;
+
+const groupId =
+target.groupId || target.id;
+
+const targetDate =
+new Date(target.date);
+
+try {
+
+// =========================
+// 当日だけ
+// =========================
+
+if (mode === "single") {
+
+  if (!confirm("この日だけ削除しますか？"))
+    return;
+
+  await deleteDoc(
+    doc(db, "events", id)
+  );
+}
+
+// =========================
+// 以降すべて
+// =========================
+
+if (mode === "future") {
+
+  if (!confirm("この日以降を削除しますか？"))
+    return;
+
+  const targets =
+    events.filter(e => {
+
+      const sameGroup =
+        (e.groupId || e.id) === groupId;
+
+      const eventDate =
+        new Date(e.date);
+
+      return (
+        sameGroup &&
+        eventDate >= targetDate
+      );
+    });
+
+  for (const e of targets) {
+
+    await deleteDoc(
+      doc(db, "events", e.id)
+    );
+  }
+}
+
+// =========================
+// 全部削除
+// =========================
+
+if (mode === "all") {
+
+  if (!confirm("全部削除しますか？"))
+    return;
+
+  const targets =
+    events.filter(e =>
+      (e.groupId || e.id) === groupId
+    );
+
+  for (const e of targets) {
+
+    await deleteDoc(
+      doc(db, "events", e.id)
+    );
+  }
+}
+
+} catch (error) {
+
+console.error(error);
+
+alert("削除失敗");
+
+}
 };
 
 // =========================
