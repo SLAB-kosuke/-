@@ -114,6 +114,30 @@ window.closeModal = function () {
   document.getElementById("eventModal").style.display =
     "none";
 
+  document.getElementById("eventName").value =
+    "パパ";
+
+  document.getElementById("eventTitle").value =
+    "";
+
+  document.getElementById("eventDate").value =
+    "";
+
+  document.getElementById("eventTime").value =
+    "";
+
+  document.getElementById("repeatType").value =
+    "none";
+
+  document.getElementById("periodStart").value =
+    "";
+
+  document.getElementById("periodEnd").value =
+    "";
+
+  document.getElementById("periodFields").style.display =
+    "none";
+
 };
 
 window.goToday = function () {
