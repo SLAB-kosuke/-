@@ -416,13 +416,25 @@ window.editEvent = function () {
 
 window.deleteEvent = async function () {
 
-  await deleteDoc(
-    doc(db, "events_v2", selectedEvent.id)
-  );
+  try {
 
-  selectedEvent.remove();
+    await deleteDoc(
+      doc(db, "events_v2", selectedEvent.id)
+    );
 
-  closeDetailModal();
+    selectedEvent.remove();
+
+    closeDetailModal();
+
+    alert("削除しました");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("削除失敗");
+
+  }
 
 };
 
