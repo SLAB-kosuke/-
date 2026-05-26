@@ -167,6 +167,8 @@ window.toggleList = function () {
 
 window.saveEvent = async function () {
 
+  alert("save開始");
+
   try {
 
     const name =
@@ -190,13 +192,7 @@ window.saveEvent = async function () {
     const periodEnd =
       document.getElementById("periodEnd").value;
 
-    if (!title || !date) {
-
-      alert("タイトルと日付を入力してください");
-
-      return;
-
-    }
+    alert("入力取得OK");
 
     await addDoc(
       collection(db, "events_v2"),
@@ -213,13 +209,15 @@ window.saveEvent = async function () {
       }
     );
 
-    alert("保存しました");
+    alert("Firestore保存OK");
 
     closeModal();
 
     calendar.removeAllEvents();
 
     await loadEvents();
+
+    alert("保存しました");
 
   } catch (error) {
 
@@ -230,6 +228,7 @@ window.saveEvent = async function () {
   }
 
 };
+
 async function loadEvents() {
 
   const snapshot =
