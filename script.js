@@ -213,13 +213,13 @@ window.saveEvent = async function () {
       }
     );
 
+    alert("保存しました");
+
     closeModal();
 
     calendar.removeAllEvents();
 
-    loadEvents();
-
-    alert("保存しました");
+    await loadEvents();
 
   } catch (error) {
 
