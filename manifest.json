@@ -1,10 +1,11 @@
 {
   "name": "我が家の予定",
-  "short_name": "家族予定",
-  "start_url": "./",
+  "short_name": "我が家の予定",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4a90e2",
+  "theme_color": "#4A90E2",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
