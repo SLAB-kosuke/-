@@ -1,698 +1,272 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
-getFirestore,
-collection,
-addDoc,
-onSnapshot,
-deleteDoc,
-doc,
-updateDoc
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// =========================
-// Firebase
-// =========================
-
 const firebaseConfig = {
-apiKey: "AIzaSyBGeCs9-gsS66uCZ9HqEsbSqNv4_dOE5Bg",
-authDomain: "family-calendar-38bf7.firebaseapp.com",
-projectId: "family-calendar-38bf7",
-storageBucket: "family-calendar-38bf7.firebasestorage.app",
-messagingSenderId: "419708212606",
-appId: "1:419708212606:web:2c93b424d3bd8c7387cf2f",
-measurementId: "G-H72FRHK749"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
 
-const eventsRef = collection(db, "events");
+const PASSWORD = "1980";
 
-// =========================
-// パスワード
-// =========================
-
-const APP_PASSWORD = "1980";
-
-// =========================
-// 名前カラー固定
-// =========================
-
-const nameColors = {
-"パパ": "#2196f3",
-"ママ": "#f1c40f",
-"トウカ": "#7FDBFF",
-"ヒヨリ": "#ff69b4",
-"祖母": "#9b59b6",
-"祖父": "#808080"
+const COLORS = {
+  "パパ": "#4A90E2",
+  "ママ": "#F8E71C",
+  "トウカ": "#7FDBFF",
+  "ヒヨリ": "#FFB6D9",
+  "祖母": "#B36AE2",
+  "祖父": "#9B9B9B",
+  "共通": "#50C878"
 };
 
-let currentDate = new Date();
-
-let events = [];
-
-let editingId = null;
-
-// =========================
-// 初期化
-// =========================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-const hour =
-document.getElementById("hour");
-
-for (let i = 0; i < 24; i++) {
-
-const h =
-  String(i).padStart(2, "0");
-
-hour.innerHTML += `
-  <option value="${h}">
-    ${h}
-  </option>
-`;
-
-}
-
-document
-.getElementById("repeatType")
-.addEventListener("change", function () {
-
-  const repeatEnd =
-    document.getElementById("repeatEnd");
-
-  if (this.value === "other") {
-
-    repeatEnd.style.display = "block";
-
-  } else {
-
-    repeatEnd.style.display = "none";
-    repeatEnd.value = ""; // ←これ重要（残り防止）
-  }
-});
-
-loadEvents();
-});
-
-// =========================
-// ログイン
-// =========================
+let calendar;
+let selectedEvent = null;
 
 window.login = function () {
+  const password = document.getElementById("passwordInput").value;
 
-const pass =
-document
-.getElementById("passwordInput")
-.value
-.trim();
+  if (password === PASSWORD) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
 
-if (pass === APP_PASSWORD) {
-
-document
-  .getElementById("loginScreen")
-  .style.display = "none";
-
-} else {
-
-alert("パスワードが違います");
-
-}
+    initCalendar();
+  } else {
+    alert("パスワードが違います");
+  }
 };
 
-// =========================
-// Firestore同期
-// =========================
+function initCalendar() {
+  const calendarEl = document.getElementById("calendar");
 
-function loadEvents() {
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: "dayGridMonth",
+    locale: "ja",
+    height: "auto",
+    dayMaxEvents: 5,
 
-onSnapshot(eventsRef, snapshot => {
+    dateClick(info) {
+      openModal(info.dateStr);
+    },
 
-events = [];
-
-snapshot.forEach(docu => {
-
-  events.push({
-    id: docu.id,
-    ...docu.data()
+    eventClick(info) {
+      selectedEvent = info.event;
+      openDetailModal(info.event);
+    }
   });
-});
 
-renderCalendar();
-renderMonthlyList();
+  calendar.render();
 
-});
+  loadEvents();
 }
 
-// =========================
-// カレンダー
-// =========================
+window.openModal = function (date = "") {
+  document.getElementById("eventModal").style.display = "flex";
 
-function renderCalendar() {
-
-const calendar =
-document.getElementById("calendar");
-
-const monthYear =
-document.getElementById("monthYear");
-
-calendar.innerHTML = "";
-
-const year =
-currentDate.getFullYear();
-
-const month =
-currentDate.getMonth();
-
-monthYear.textContent =
-`${year}年 ${month + 1}月`;
-
-const firstDay =
-new Date(year, month, 1).getDay();
-
-const lastDate =
-new Date(year, month + 1, 0).getDate();
-
-for (let i = 0; i < firstDay; i++) {
-
-calendar.innerHTML += `<div></div>`;
-
-}
-
-for (let day = 1; day <= lastDate; day++) {
-
-const dateKey =`${year}-${month + 1}-${day}`;
-
-const dayEvents =getEventsForDate(dateKey);
-
-let html = `
-  <div class="day"
-    onclick="openModal('${dateKey}')">
-
-    <div class="date">${day}</div>
-`;
-
-dayEvents.forEach(e => {
-
-  html += `
-    <div style="
-      background:${e.color};
-      color:#fff;
-      font-size:11px;
-      padding:2px 5px;
-      margin-top:2px;
-      border-radius:5px;
-    ">
-      ${e.time}
-      ${e.name}
-    </div>
-  `;
-});
-
-html += `</div>`;
-
-calendar.innerHTML += html;
-
-}
-}
-
-// =========================
-// 繰り返し判定
-// =========================
-
-function getEventsForDate(dateKey) {
-
-const target =
-new Date(dateKey);
-
-return events.filter(e => {
-
-const base =
-  new Date(e.date);
-
-// 単発
-if (e.date === dateKey) {
-  return true;
-}
-
-// 毎週
-if (e.repeat === "weekly") {
-
-  return (
-    base.getDay() ===
-    target.getDay()
-  );
-}
-
-// 毎月
-if (e.repeat === "monthly") {
-
-  return (
-    base.getDate() ===
-    target.getDate()
-  );
-}
-
-// その他
-if (e.repeat === "other") {
-
-  if (!e.repeatEnd)
-    return false;
-
-  const end =
-    new Date(e.repeatEnd);
-
-  return (
-    target >= base &&
-    target <= end
-  );
-}
-
-return false;
-
-});
-}
-
-// =========================
-// 月一覧
-// =========================
-
-function renderMonthlyList() {
-
-const list =
-document.getElementById("monthlyList");
-
-list.innerHTML = "";
-
-if (events.length === 0) {
-
-list.innerHTML =
-  "<p>予定はありません</p>";
-
-return;
-
-}
-
-events.forEach(e => {
-
-list.innerHTML += `
-  <div style="
-    background:${e.color};
-    color:#fff;
-    padding:6px;
-    margin-bottom:6px;
-    border-radius:6px;
-  ">
-    ${e.date}
-    ${e.time}
-    ${e.name}
-    ：${e.schedule}
-  </div>
-`;
-
-});
-}
-
-// =========================
-// モーダル
-// =========================
-
-window.openModal = function(dateKey) {
-
-window.selectedDate = dateKey;
-
-document
-.getElementById("modal")
-.style.display = "flex";
-
-document
-.getElementById("selectedDate")
-.textContent = dateKey;
-
-renderDayEvents(dateKey);
+  if (date) {
+    document.getElementById("eventDate").value = date;
+  }
 };
 
-window.closeModal = function() {
-
-document
-.getElementById("modal")
-.style.display = "none";
+window.closeModal = function () {
+  document.getElementById("eventModal").style.display = "none";
 };
 
-// =========================
-// 保存
-// =========================
+window.goToday = function () {
+  calendar.today();
+};
+
+window.toggleList = function () {
+  const list = document.getElementById("eventList");
+
+  if (list.style.display === "block") {
+    list.style.display = "none";
+  } else {
+    list.style.display = "block";
+    generateList();
+  }
+};
 
 window.saveEvent = async function () {
-
-const name =
-document.getElementById("name").value;
-
-const schedule =
-document.getElementById("schedule").value;
-
-const hour =
-document.getElementById("hour").value;
-
-const minute =
-document.getElementById("minute").value;
-
-const repeat =
-document.getElementById("repeatType").value;
-
-const repeatEnd =
-document.getElementById("repeatEnd").value;
-
-if (!name || !schedule) {
-
-alert("名前と予定を入力してください");
-
-return;
-
-}
-
-// ★ 繰り返し用グループID
-const groupId =
-editingId ||
-crypto.randomUUID();
-
-const data = {
-
-date: window.selectedDate,
-
-name,
-
-schedule,
-
-time: `${hour}:${minute}`,
-
-repeat,
-
-repeatEnd,
-
-groupId,
-
-color:
-  nameColors[name] || "#4a90e2"
-
-};
-
-try {
-
-if (editingId) {
-
-  await updateDoc(
-    doc(db, "events", editingId),
-    data
-  );
-
-  editingId = null;
-
-} else {
-
-  await addDoc(eventsRef, data);
-}
-
-// リセット
-document.getElementById("name").value = "";
-
-document.getElementById("schedule").value = "";
-
-document.getElementById("hour").value = "00";
-
-document.getElementById("minute").value = "00";
-
-document.getElementById("repeatType").value =
-  "none";
-
-document.getElementById("repeatEnd").value = "";
-
-closeModal();
-
-} catch (error) {
-
-console.error(error);
-
-alert("保存失敗");
-
-}
-};
-
-// =========================
-// 日別
-// =========================
-
-function renderDayEvents(dateKey) {
-
-const box =
-document.getElementById("dayEvents");
-
-box.innerHTML = "";
-
-const dayEvents =
-getEventsForDate(dateKey);
-
-if (dayEvents.length === 0) {
-
-box.innerHTML =
-  "<p>予定なし</p>";
-
-return;
-
-}
-
-dayEvents.forEach(e => {
-
-box.innerHTML += `
-  <div style="
-    background:${e.color};
-    color:#fff;
-    padding:6px;
-    margin-bottom:6px;
-    border-radius:6px;
-  ">
-
-    ${e.time}
-    ${e.name}
-    ：${e.schedule}
-
-    <div style="
-      margin-top:5px;
-      display:flex;
-      gap:5px;
-      flex-wrap:wrap;
-    ">
-
-      <button
-        style="
-          background:#f1c40f;
-          color:black;
-          border:none;
-          border-radius:5px;
-          padding:5px 10px;
-        "
-        onclick="editEvent('${e.id}')">
-
-        編集
-
-      </button>
-
-      <button
-        style="
-          background:#e74c3c;
-          color:white;
-          border:none;
-          border-radius:5px;
-          padding:5px 10px;
-        "
-        onclick="deleteEvent('${e.id}','single')">
-
-        当日削除
-
-      </button>
-
-      <button
-        style="
-          background:#9b59b6;
-          color:white;
-          border:none;
-          border-radius:5px;
-          padding:5px 10px;
-        "
-        onclick="deleteEvent('${e.id}','future')">
-
-        以降削除
-
-      </button>
-
-      <button
-        style="
-          background:#34495e;
-          color:white;
-          border:none;
-          border-radius:5px;
-          padding:5px 10px;
-        "
-        onclick="deleteEvent('${e.id}','all')">
-
-        全部削除
-
-      </button>
-
-    </div>
-
-  </div>
-`;
-
-});
-}
-
-// =========================
-// 編集
-// =========================
-
-window.editEvent = function(id) {
-
-const e =
-events.find(v => v.id === id);
-
-if (!e) return;
-
-editingId = id;
-
-document.getElementById("name").value =
-e.name;
-
-document.getElementById("schedule").value =
-e.schedule;
-
-const [h, m] =
-e.time.split(":");
-
-document.getElementById("hour").value = h;
-
-document.getElementById("minute").value = m;
-
-document.getElementById("repeatType").value =
-e.repeat || "none";
-
-document.getElementById("repeatEnd").value =
-e.repeatEnd || "";
-
-document.getElementById("modal").style.display =
-"flex";
-};
-
-// =========================
-// 削除
-// =========================
-
-window.deleteEvent =
-async function(id, mode) {
-
-const target =
-events.find(e => e.id === id);
-
-if (!target) return;
-
-const groupId =
-target.groupId || target.id;
-
-const targetDate =
-new Date(target.date);
-
-try {
-
-// =========================
-// 当日だけ
-// =========================
-
-if (mode === "single") {
-
-  if (!confirm("この日だけ削除しますか？"))
+  const name = document.getElementById("eventName").value;
+  const title = document.getElementById("eventTitle").value;
+  const date = document.getElementById("eventDate").value;
+  const time = document.getElementById("eventTime").value;
+  const repeatType = document.getElementById("repeatType").value;
+
+  const periodStart = document.getElementById("periodStart").value;
+  const periodEnd = document.getElementById("periodEnd").value;
+
+  if (!title || !date) {
+    alert("タイトルと日付を入力してください");
     return;
+  }
 
-  await deleteDoc(
-    doc(db, "events", id)
-  );
+  await addDoc(collection(db, "events"), {
+    name,
+    title,
+    date,
+    time,
+    repeatType,
+    periodStart,
+    periodEnd,
+    color: COLORS[name],
+    createdAt: Date.now()
+  });
+
+  closeModal();
+
+  calendar.removeAllEvents();
+
+  loadEvents();
+};
+
+async function loadEvents() {
+  const snapshot = await getDocs(collection(db, "events"));
+
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+
+    if (data.repeatType === "period") {
+      generatePeriodEvents(data, docSnap.id);
+    } else {
+      calendar.addEvent({
+        id: docSnap.id,
+        title: formatTitle(data),
+        start: data.date,
+        backgroundColor: data.color,
+        borderColor: data.color,
+        extendedProps: data
+      });
+    }
+  });
 }
 
-// =========================
-// 以降すべて
-// =========================
+function generatePeriodEvents(data, id) {
+  const start = new Date(data.periodStart);
+  const end = new Date(data.periodEnd);
 
-if (mode === "future") {
+  const current = new Date(start);
 
-  if (!confirm("この日以降を削除しますか？"))
-    return;
+  while (current <= end) {
+    const dateStr = current.toISOString().split("T")[0];
 
-  const targets =
-    events.filter(e => {
-
-      const sameGroup =
-        (e.groupId || e.id) === groupId;
-
-      const eventDate =
-        new Date(e.date);
-
-      return (
-        sameGroup &&
-        eventDate >= targetDate
-      );
+    calendar.addEvent({
+      id,
+      title: formatTitle(data),
+      start: dateStr,
+      backgroundColor: data.color,
+      borderColor: data.color,
+      extendedProps: data
     });
 
-  for (const e of targets) {
-
-    await deleteDoc(
-      doc(db, "events", e.id)
-    );
+    current.setDate(current.getDate() + 1);
   }
 }
 
-// =========================
-// 全部削除
-// =========================
+function formatTitle(data) {
+  if (data.time) {
+    return `${data.time} ${data.title}`;
+  }
 
-if (mode === "all") {
+  return data.title;
+}
 
-  if (!confirm("全部削除しますか？"))
-    return;
+function generateList() {
+  const list = document.getElementById("eventList");
 
-  const targets =
-    events.filter(e =>
-      (e.groupId || e.id) === groupId
-    );
+  const events = calendar.getEvents();
 
-  for (const e of targets) {
+  events.sort((a, b) => new Date(a.start) - new Date(b.start));
 
-    await deleteDoc(
-      doc(db, "events", e.id)
-    );
+  let html = "";
+
+  events.forEach(event => {
+    html += `
+      <div style="margin-bottom:10px;padding:10px;border-bottom:1px solid #ddd;">
+        <strong>${event.startStr}</strong><br>
+        ${event.title}
+      </div>
+    `;
+  });
+
+  list.innerHTML = html;
+}
+
+function openDetailModal(event) {
+  document.getElementById("detailModal").style.display = "flex";
+
+  document.getElementById("detailTitle").innerText = event.title;
+
+  const buttons = document.getElementById("detailButtons");
+
+  const repeatType = event.extendedProps.repeatType;
+
+  if (repeatType === "none") {
+    buttons.innerHTML = `
+      <button onclick="editEvent()">編集</button>
+      <button onclick="deleteEvent()">削除</button>
+      <button onclick="closeDetailModal()">閉じる</button>
+    `;
+  } else {
+    buttons.innerHTML = `
+      <button onclick="editEvent()">編集</button>
+      <button onclick="deleteSingleRepeat()">当日削除</button>
+      <button onclick="deleteFutureRepeat()">以降削除</button>
+      <button onclick="closeDetailModal()">閉じる</button>
+    `;
   }
 }
 
-} catch (error) {
-
-console.error(error);
-
-alert("削除失敗");
-
-}
+window.closeDetailModal = function () {
+  document.getElementById("detailModal").style.display = "none";
 };
 
-// =========================
-// 月変更
-// =========================
-
-window.changeMonth = function(offset) {
-
-currentDate.setMonth(
-currentDate.getMonth() + offset
-);
-
-renderCalendar();
+window.editEvent = function () {
+  alert("編集機能は次段階で追加");
 };
 
+window.deleteEvent = async function () {
+  await deleteDoc(doc(db, "events", selectedEvent.id));
+
+  selectedEvent.remove();
+
+  closeDetailModal();
+};
+
+window.deleteSingleRepeat = function () {
+  alert("当日削除機能は次段階で追加");
+};
+
+window.deleteFutureRepeat = function () {
+  alert("以降削除機能は次段階で追加");
+};
+
+const repeatSelect = document.getElementById("repeatType");
+
+repeatSelect.addEventListener("change", () => {
+  const value = repeatSelect.value;
+
+  const periodFields = document.getElementById("periodFields");
+
+  if (value === "period") {
+    periodFields.style.display = "flex";
+  } else {
+    periodFields.style.display = "none";
+  }
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", 
