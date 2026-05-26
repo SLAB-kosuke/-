@@ -44,9 +44,13 @@ window.login = function () {
 
   if (password === "1980") {
 
-    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("loginScreen").style.display =
+      "none";
 
-    document.getElementById("mainApp").style.display = "block";
+    document.getElementById("mainApp").style.display =
+      "block";
+
+    initCalendar();
 
   } else {
 
