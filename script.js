@@ -114,8 +114,8 @@ window.closeModal = function () {
   document.getElementById("eventModal").style.display =
     "none";
 
-  document.getElementById("eventName").value =
-    "パパ";
+  document.getElementById("eventName").selectedIndex =
+    0;
 
   document.getElementById("eventTitle").value =
     "";
