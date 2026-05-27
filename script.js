@@ -173,7 +173,11 @@ window.saveEvent = async function () {
 
     const name =
       document.getElementById("eventName").value;
+　　if (!name) {
 
+  alert("名前を選択してください");
+
+  return;
     const title =
       document.getElementById("eventTitle").value;
 
