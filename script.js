@@ -377,6 +377,8 @@ function addCalendarEvent(data, id, dateStr) {
 
     borderColor: data.color,
 
+     displayEventTime: false,
+
     extendedProps: data
 
   });
