@@ -220,6 +220,15 @@ window.saveEvent = async function () {
     const periodEnd =
       document.getElementById("periodEnd").value;
 
+    let excludedDates = [];
+
+    if (selectedEvent?.extendedProps?.excludedDates) {
+
+      excludedDates =
+        selectedEvent.extendedProps.excludedDates;
+
+    }
+
     const saveData = {
       name,
       title,
@@ -228,6 +237,7 @@ window.saveEvent = async function () {
       repeatType,
       periodStart,
       periodEnd,
+      excludedDates,
       color: COLORS[name],
       createdAt: Date.now()
     };
@@ -278,6 +288,12 @@ async function loadEvents() {
     const data =
       docSnap.data();
 
+    if (!data.excludedDates) {
+
+      data.excludedDates = [];
+
+    }
+
     if (data.repeatType === "period") {
 
       generatePeriodEvents(data, docSnap.id);
@@ -318,6 +334,33 @@ async function loadEvents() {
 
 }
 
+function addCalendarEvent(data, id, dateStr) {
+
+  if (
+    data.excludedDates &&
+    data.excludedDates.includes(dateStr)
+  ) {
+    return;
+  }
+
+  calendar.addEvent({
+
+    id,
+
+    title: formatTitle(data),
+
+    start: dateStr,
+
+    backgroundColor: data.color,
+
+    borderColor: data.color,
+
+    extendedProps: data
+
+  });
+
+}
+
 function generatePeriodEvents(data, id) {
 
   const start =
@@ -334,21 +377,7 @@ function generatePeriodEvents(data, id) {
     const dateStr =
       current.toISOString().split("T")[0];
 
-    calendar.addEvent({
-
-      id,
-
-      title: formatTitle(data),
-
-      start: dateStr,
-
-      backgroundColor: data.color,
-
-      borderColor: data.color,
-
-      extendedProps: data
-
-    });
+    addCalendarEvent(data, id, dateStr);
 
     current.setDate(current.getDate() + 1);
 
@@ -370,21 +399,10 @@ function generateWeeklyEvents(data, id) {
       start.getDate() + (i * 7)
     );
 
-    calendar.addEvent({
+    const dateStr =
+      current.toISOString().split("T")[0];
 
-      id,
-
-      title: formatTitle(data),
-
-      start: current.toISOString().split("T")[0],
-
-      backgroundColor: data.color,
-
-      borderColor: data.color,
-
-      extendedProps: data
-
-    });
+    addCalendarEvent(data, id, dateStr);
 
   }
 
@@ -404,21 +422,10 @@ function generateMonthlyEvents(data, id) {
       start.getMonth() + i
     );
 
-    calendar.addEvent({
+    const dateStr =
+      current.toISOString().split("T")[0];
 
-      id,
-
-      title: formatTitle(data),
-
-      start: current.toISOString().split("T")[0],
-
-      backgroundColor: data.color,
-
-      borderColor: data.color,
-
-      extendedProps: data
-
-    });
+    addCalendarEvent(data, id, dateStr);
 
   }
 
@@ -438,21 +445,10 @@ function generateYearlyEvents(data, id) {
       start.getFullYear() + i
     );
 
-    calendar.addEvent({
+    const dateStr =
+      current.toISOString().split("T")[0];
 
-      id,
-
-      title: formatTitle(data),
-
-      start: current.toISOString().split("T")[0],
-
-      backgroundColor: data.color,
-
-      borderColor: data.color,
-
-      extendedProps: data
-
-    });
+    addCalendarEvent(data, id, dateStr);
 
   }
 
@@ -643,9 +639,47 @@ window.deleteEvent = async function () {
 
 };
 
-window.deleteSingleRepeat = function () {
+window.deleteSingleRepeat = async function () {
 
-  alert("当日削除機能は次段階で追加");
+  try {
+
+    const dateStr =
+      selectedEvent.startStr;
+
+    const data =
+      selectedEvent.extendedProps;
+
+    let excludedDates =
+      data.excludedDates || [];
+
+    if (!excludedDates.includes(dateStr)) {
+
+      excludedDates.push(dateStr);
+
+    }
+
+    await updateDoc(
+      doc(db, "events_v2", selectedEvent.id),
+      {
+        excludedDates
+      }
+    );
+
+    calendar.removeAllEvents();
+
+    await loadEvents();
+
+    closeDetailModal();
+
+    alert("当日の予定を削除しました");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("削除失敗");
+
+  }
 
 };
 
