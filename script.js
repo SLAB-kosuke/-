@@ -238,6 +238,8 @@ window.saveEvent = async function () {
       periodStart,
       periodEnd,
       excludedDates,
+      repeatEndDate:
+  selectedEvent?.extendedProps?.repeatEndDate || "",
       color: COLORS[name],
       createdAt: Date.now()
     };
