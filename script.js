@@ -8,7 +8,6 @@ import {
   deleteDoc,
   updateDoc,
   doc
-
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -44,7 +43,7 @@ window.login = function () {
   const password =
     document.getElementById("passwordInput").value;
 
-  if (password === "1980") {
+  if (password === PASSWORD) {
 
     document.getElementById("loginScreen").style.display =
       "none";
@@ -59,6 +58,7 @@ window.login = function () {
     alert("パスワードが違います");
 
   }
+
 };
 
 function initCalendar() {
@@ -100,14 +100,34 @@ function initCalendar() {
 
 window.openModal = function (date = "") {
 
+  selectedEvent = null;
+
   document.getElementById("eventModal").style.display =
     "flex";
 
-  if (date) {
+  document.getElementById("eventName").value =
+    "";
 
-    document.getElementById("eventDate").value = date;
+  document.getElementById("eventTitle").value =
+    "";
 
-  }
+  document.getElementById("eventDate").value =
+    date || "";
+
+  document.getElementById("eventTime").value =
+    "";
+
+  document.getElementById("repeatType").value =
+    "none";
+
+  document.getElementById("periodStart").value =
+    "";
+
+  document.getElementById("periodEnd").value =
+    "";
+
+  document.getElementById("periodFields").style.display =
+    "none";
 
 };
 
@@ -116,8 +136,8 @@ window.closeModal = function () {
   document.getElementById("eventModal").style.display =
     "none";
 
-  document.getElementById("eventName").selectedIndex =
-    0;
+  document.getElementById("eventName").value =
+    "";
 
   document.getElementById("eventTitle").value =
     "";
@@ -169,8 +189,6 @@ window.toggleList = function () {
 
 window.saveEvent = async function () {
 
-  alert("save開始");
-
   try {
 
     const name =
@@ -202,42 +220,40 @@ window.saveEvent = async function () {
     const periodEnd =
       document.getElementById("periodEnd").value;
 
-    alert("入力取得OK");
+    const saveData = {
+      name,
+      title,
+      date,
+      time,
+      repeatType,
+      periodStart,
+      periodEnd,
+      color: COLORS[name],
+      createdAt: Date.now()
+    };
 
-   const saveData = {
-  name,
-  title,
-  date,
-  time,
-  repeatType,
-  periodStart,
-  periodEnd,
-  color: COLORS[name],
-  createdAt: Date.now()
-};
+    if (selectedEvent) {
 
-if (selectedEvent) {
+      await updateDoc(
+        doc(db, "events_v2", selectedEvent.id),
+        saveData
+      );
 
-  await updateDoc(
-    doc(db, "events_v2", selectedEvent.id),
-    saveData
-  );
+    } else {
 
-} else {
+      await addDoc(
+        collection(db, "events_v2"),
+        saveData
+      );
 
-  await addDoc(
-    collection(db, "events_v2"),
-    saveData
-  );
-
-}
-
-    alert("Firestore保存OK");
+    }
 
     calendar.removeAllEvents();
 
     await loadEvents();
-selectedEvent = null;
+
+    selectedEvent = null;
+
     closeModal();
 
     alert("保存しました");
@@ -259,11 +275,24 @@ async function loadEvents() {
 
   snapshot.forEach((docSnap) => {
 
-    const data = docSnap.data();
+    const data =
+      docSnap.data();
 
     if (data.repeatType === "period") {
 
       generatePeriodEvents(data, docSnap.id);
+
+    } else if (data.repeatType === "weekly") {
+
+      generateWeeklyEvents(data, docSnap.id);
+
+    } else if (data.repeatType === "monthly") {
+
+      generateMonthlyEvents(data, docSnap.id);
+
+    } else if (data.repeatType === "yearly") {
+
+      generateYearlyEvents(data, docSnap.id);
 
     } else {
 
@@ -327,6 +356,108 @@ function generatePeriodEvents(data, id) {
 
 }
 
+function generateWeeklyEvents(data, id) {
+
+  const start =
+    new Date(data.date);
+
+  for (let i = 0; i < 52; i++) {
+
+    const current =
+      new Date(start);
+
+    current.setDate(
+      start.getDate() + (i * 7)
+    );
+
+    calendar.addEvent({
+
+      id,
+
+      title: formatTitle(data),
+
+      start: current.toISOString().split("T")[0],
+
+      backgroundColor: data.color,
+
+      borderColor: data.color,
+
+      extendedProps: data
+
+    });
+
+  }
+
+}
+
+function generateMonthlyEvents(data, id) {
+
+  const start =
+    new Date(data.date);
+
+  for (let i = 0; i < 24; i++) {
+
+    const current =
+      new Date(start);
+
+    current.setMonth(
+      start.getMonth() + i
+    );
+
+    calendar.addEvent({
+
+      id,
+
+      title: formatTitle(data),
+
+      start: current.toISOString().split("T")[0],
+
+      backgroundColor: data.color,
+
+      borderColor: data.color,
+
+      extendedProps: data
+
+    });
+
+  }
+
+}
+
+function generateYearlyEvents(data, id) {
+
+  const start =
+    new Date(data.date);
+
+  for (let i = 0; i < 10; i++) {
+
+    const current =
+      new Date(start);
+
+    current.setFullYear(
+      start.getFullYear() + i
+    );
+
+    calendar.addEvent({
+
+      id,
+
+      title: formatTitle(data),
+
+      start: current.toISOString().split("T")[0],
+
+      backgroundColor: data.color,
+
+      borderColor: data.color,
+
+      extendedProps: data
+
+    });
+
+  }
+
+}
+
 function formatTitle(data) {
 
   let text = "";
@@ -343,7 +474,6 @@ function formatTitle(data) {
 
 }
 
- 
 function generateList() {
 
   const list =
@@ -530,21 +660,22 @@ const repeatSelect =
 
 repeatSelect.addEventListener("change", () => {
 
-  const value = repeatSelect.value;
+  const value =
+    repeatSelect.value;
 
   const periodFields =
     document.getElementById("periodFields");
 
   if (value === "period") {
 
-    periodFields.style.display = "flex";
+    periodFields.style.display =
+      "flex";
 
   } else {
 
-    periodFields.style.display = "none";
+    periodFields.style.display =
+      "none";
 
   }
 
 });
-
-
