@@ -204,27 +204,40 @@ window.saveEvent = async function () {
 
     alert("入力取得OK");
 
-    await addDoc(
-      collection(db, "events_v2"),
-      {
-        name,
-        title,
-        date,
-        time,
-        repeatType,
-        periodStart,
-        periodEnd,
-        color: COLORS[name],
-        createdAt: Date.now()
-      }
-    );
+   const saveData = {
+  name,
+  title,
+  date,
+  time,
+  repeatType,
+  periodStart,
+  periodEnd,
+  color: COLORS[name],
+  createdAt: Date.now()
+};
+
+if (selectedEvent) {
+
+  await updateDoc(
+    doc(db, "events_v2", selectedEvent.id),
+    saveData
+  );
+
+} else {
+
+  await addDoc(
+    collection(db, "events_v2"),
+    saveData
+  );
+
+}
 
     alert("Firestore保存OK");
 
     calendar.removeAllEvents();
 
     await loadEvents();
-
+selectedEvent = null;
     closeModal();
 
     alert("保存しました");
