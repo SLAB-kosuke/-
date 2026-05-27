@@ -367,25 +367,25 @@ function addCalendarEvent(data, id, dateStr) {
     return;
   }
 
-  calendar.addEvent({
+calendar.addEvent({
 
-    id,
+  id,
 
-    title: formatTitle(data),
+  title: formatTitle(data),
 
-    start: dateStr,
+  start: data.time
+    ? `${dateStr}T${data.time}:00`
+    : dateStr,
 
-    backgroundColor: data.color,
+  allDay: !data.time,
 
-    borderColor: data.color,
+  backgroundColor: data.color,
 
-     displayEventTime: false,
+  borderColor: data.color,
 
-    extendedProps: data
+  extendedProps: data
 
-  });
-
-}
+});
 
 function generatePeriodEvents(data, id) {
 
