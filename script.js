@@ -239,7 +239,7 @@ window.saveEvent = async function () {
       periodEnd,
       excludedDates,
       repeatEndDate:
-  selectedEvent?.extendedProps?.repeatEndDate || "",
+        selectedEvent?.extendedProps?.repeatEndDate || "",
       color: COLORS[name],
       createdAt: Date.now()
     };
@@ -296,6 +296,12 @@ async function loadEvents() {
 
     }
 
+    if (!data.repeatEndDate) {
+
+      data.repeatEndDate = "";
+
+    }
+
     if (data.repeatType === "period") {
 
       generatePeriodEvents(data, docSnap.id);
@@ -314,21 +320,11 @@ async function loadEvents() {
 
     } else {
 
-      calendar.addEvent({
-
-        id: docSnap.id,
-
-        title: formatTitle(data),
-
-        start: data.date,
-
-        backgroundColor: data.color,
-
-        borderColor: data.color,
-
-        extendedProps: data
-
-      });
+      addCalendarEvent(
+        data,
+        docSnap.id,
+        data.date
+      );
 
     }
 
@@ -338,9 +334,18 @@ async function loadEvents() {
 
 function addCalendarEvent(data, id, dateStr) {
 
+  // 当日削除
   if (
     data.excludedDates &&
     data.excludedDates.includes(dateStr)
+  ) {
+    return;
+  }
+
+  // 以降削除
+  if (
+    data.repeatEndDate &&
+    dateStr > data.repeatEndDate
   ) {
     return;
   }
@@ -685,9 +690,35 @@ window.deleteSingleRepeat = async function () {
 
 };
 
-window.deleteFutureRepeat = function () {
+window.deleteFutureRepeat = async function () {
 
-  alert("以降削除機能は次段階で追加");
+  try {
+
+    const dateStr =
+      selectedEvent.startStr;
+
+    await updateDoc(
+      doc(db, "events_v2", selectedEvent.id),
+      {
+        repeatEndDate: dateStr
+      }
+    );
+
+    calendar.removeAllEvents();
+
+    await loadEvents();
+
+    closeDetailModal();
+
+    alert("この日以降の予定を削除しました");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("削除失敗");
+
+  }
 
 };
 
