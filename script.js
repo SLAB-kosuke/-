@@ -208,8 +208,19 @@ window.saveEvent = async function () {
     const date =
       document.getElementById("eventDate").value;
 
-    const time =
-      document.getElementById("eventTime").value;
+    const hour =
+  document.getElementById("eventHour").value;
+
+const minute =
+  document.getElementById("eventMinute").value;
+
+let time = "";
+
+if (hour !== "" && minute !== "") {
+
+  time = `${hour}:${minute}`;
+
+}
 
     const repeatType =
       document.getElementById("repeatType").value;
@@ -593,8 +604,18 @@ window.editEvent = function () {
   document.getElementById("eventDate").value =
     data.date || "";
 
-  document.getElementById("eventTime").value =
-    data.time || "";
+if (data.time) {
+
+  const splitTime =
+    data.time.split(":");
+
+  document.getElementById("eventHour").value =
+    splitTime[0];
+
+  document.getElementById("eventMinute").value =
+    splitTime[1];
+
+}
 
   document.getElementById("repeatType").value =
     data.repeatType || "none";
