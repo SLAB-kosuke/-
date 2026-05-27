@@ -114,7 +114,10 @@ window.openModal = function (date = "") {
   document.getElementById("eventDate").value =
     date || "";
 
-  document.getElementById("eventTime").value =
+  document.getElementById("eventHour").value =
+    "";
+
+  document.getElementById("eventMinute").value =
     "";
 
   document.getElementById("repeatType").value =
@@ -145,7 +148,10 @@ window.closeModal = function () {
   document.getElementById("eventDate").value =
     "";
 
-  document.getElementById("eventTime").value =
+  document.getElementById("eventHour").value =
+    "";
+
+  document.getElementById("eventMinute").value =
     "";
 
   document.getElementById("repeatType").value =
@@ -209,18 +215,18 @@ window.saveEvent = async function () {
       document.getElementById("eventDate").value;
 
     const hour =
-  document.getElementById("eventHour").value;
+      document.getElementById("eventHour").value;
 
-const minute =
-  document.getElementById("eventMinute").value;
+    const minute =
+      document.getElementById("eventMinute").value;
 
-let time = "";
+    let time = "";
 
-if (hour !== "" && minute !== "") {
+    if (hour !== "" && minute !== "") {
 
-  time = `${hour}:${minute}`;
+      time = `${hour}:${minute}`;
 
-}
+    }
 
     const repeatType =
       document.getElementById("repeatType").value;
@@ -345,7 +351,6 @@ async function loadEvents() {
 
 function addCalendarEvent(data, id, dateStr) {
 
-  // 当日削除
   if (
     data.excludedDates &&
     data.excludedDates.includes(dateStr)
@@ -353,7 +358,6 @@ function addCalendarEvent(data, id, dateStr) {
     return;
   }
 
-  // 以降削除
   if (
     data.repeatEndDate &&
     dateStr > data.repeatEndDate
@@ -604,18 +608,24 @@ window.editEvent = function () {
   document.getElementById("eventDate").value =
     data.date || "";
 
-if (data.time) {
-
-  const splitTime =
-    data.time.split(":");
-
   document.getElementById("eventHour").value =
-    splitTime[0];
+    "";
 
   document.getElementById("eventMinute").value =
-    splitTime[1];
+    "";
 
-}
+  if (data.time) {
+
+    const splitTime =
+      data.time.split(":");
+
+    document.getElementById("eventHour").value =
+      splitTime[0];
+
+    document.getElementById("eventMinute").value =
+      splitTime[1];
+
+  }
 
   document.getElementById("repeatType").value =
     data.repeatType || "none";
