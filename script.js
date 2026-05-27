@@ -433,7 +433,46 @@ window.closeDetailModal = function () {
 
 window.editEvent = function () {
 
-  alert("編集機能は次段階で追加");
+  closeDetailModal();
+
+  const data =
+    selectedEvent.extendedProps;
+
+  document.getElementById("eventName").value =
+    data.name || "";
+
+  document.getElementById("eventTitle").value =
+    data.title || "";
+
+  document.getElementById("eventDate").value =
+    data.date || "";
+
+  document.getElementById("eventTime").value =
+    data.time || "";
+
+  document.getElementById("repeatType").value =
+    data.repeatType || "none";
+
+  document.getElementById("periodStart").value =
+    data.periodStart || "";
+
+  document.getElementById("periodEnd").value =
+    data.periodEnd || "";
+
+  if (data.repeatType === "period") {
+
+    document.getElementById("periodFields").style.display =
+      "flex";
+
+  } else {
+
+    document.getElementById("periodFields").style.display =
+      "none";
+
+  }
+
+  document.getElementById("eventModal").style.display =
+    "flex";
 
 };
 
