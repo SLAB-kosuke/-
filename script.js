@@ -76,6 +76,8 @@ function initCalendar() {
 
     dayMaxEvents: 5,
 
+    displayEventTime: false,
+
     dateClick(info) {
 
       openModal(info.dateStr);
