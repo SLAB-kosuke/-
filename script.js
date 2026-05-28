@@ -386,6 +386,8 @@ calendar.addEvent({
   extendedProps: data
 
 });
+  
+}
 
 function generatePeriodEvents(data, id) {
 
