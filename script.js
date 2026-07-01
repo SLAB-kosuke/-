@@ -1,14 +1,21 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
+  getAuth,
+  signInAnonymously
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
   getFirestore,
   collection,
   addDoc,
-  getDocs,
+  onSnapshot,
   deleteDoc,
-  updateDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+/* Firebase設定 */
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGeCs9-gsS66uCZ9HqEsbSqNv4_dOE5Bg",
@@ -20,40 +27,49 @@ const firebaseConfig = {
   measurementId: "G-H72FRHK749"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-const PASSWORD = "1980";
+/* Firebase開始 */
 
-const COLORS = {
-  "パパ": "#4A90E2",
-  "ママ": "#F8E71C",
-  "トウカ": "#7FDBFF",
-  "ヒヨリ": "#FFB6D9",
-  "祖母": "#B36AE2",
-  "祖父": "#9B9B9B",
-  "共通": "#50C878"
-};
+const app =
+  initializeApp(firebaseConfig);
 
-let calendar;
-let selectedEvent = null;
+const db =
+  getFirestore(app);
 
-window.login = function () {
+const auth =
+  getAuth(app);
 
-  const password =
+signInAnonymously(auth)
+  .then(() => {
+
+    console.log("匿名ログイン成功");
+
+  })
+  .catch((error) => {
+
+    console.error(error);
+
+  });
+
+
+/* パスワード */
+
+const APP_PASSWORD = "1980";
+
+
+/* ログイン */
+
+window.login = function(){
+
+  const pass =
     document.getElementById("passwordInput").value;
 
-  if (password === PASSWORD) {
+  if(pass === APP_PASSWORD){
 
-    document.getElementById("loginScreen").style.display =
-      "none";
+    document.getElementById("loginScreen")
+      .style.display = "none";
 
-    document.getElementById("mainApp").style.display =
-      "block";
-
-    initCalendar();
-
-  } else {
+  }else{
 
     alert("パスワードが違います");
 
@@ -61,725 +77,846 @@ window.login = function () {
 
 };
 
-function initCalendar() {
 
-  const calendarEl =
-    document.getElementById("calendar");
+/* 基本 */
 
-  calendar = new FullCalendar.Calendar(calendarEl, {
+let currentDate = new Date();
 
-    initialView: "dayGridMonth",
+let selectedDay = null;
 
-    locale: "ja",
+let events = {};
 
-    height: "auto",
 
-    dayMaxEvents: 5,
+/* 時間 */
 
-    displayEventTime: false,
+const hourSelect =
+  document.getElementById("hour");
 
-    dateClick(info) {
+for(let i=0;i<24;i++){
 
-      openModal(info.dateStr);
-
-    },
-
-    eventClick(info) {
-
-      selectedEvent = info.event;
-
-      openDetailModal(info.event);
-
-    }
-
-  });
-
-  calendar.render();
-
-  loadEvents();
-
-}
-
-window.openModal = function (date = "") {
-
-  selectedEvent = null;
-
-  document.getElementById("eventModal").style.display =
-    "flex";
-
-  document.getElementById("eventName").value =
-    "";
-
-  document.getElementById("eventTitle").value =
-    "";
-
-  document.getElementById("eventDate").value =
-    date || "";
-
-  document.getElementById("eventHour").value =
-    "";
-
-  document.getElementById("eventMinute").value =
-    "";
-
-  document.getElementById("repeatType").value =
-    "none";
-
-  document.getElementById("periodStart").value =
-    "";
-
-  document.getElementById("periodEnd").value =
-    "";
-
-  document.getElementById("periodFields").style.display =
-    "none";
-
-};
-
-window.closeModal = function () {
-
-  document.getElementById("eventModal").style.display =
-    "none";
-
-  document.getElementById("eventName").value =
-    "";
-
-  document.getElementById("eventTitle").value =
-    "";
-
-  document.getElementById("eventDate").value =
-    "";
-
-  document.getElementById("eventHour").value =
-    "";
-
-  document.getElementById("eventMinute").value =
-    "";
-
-  document.getElementById("repeatType").value =
-    "none";
-
-  document.getElementById("periodStart").value =
-    "";
-
-  document.getElementById("periodEnd").value =
-    "";
-
-  document.getElementById("periodFields").style.display =
-    "none";
-
-};
-
-window.goToday = function () {
-
-  calendar.today();
-
-};
-
-window.toggleList = function () {
-
-  const list =
-    document.getElementById("eventList");
-
-  if (list.style.display === "block") {
-
-    list.style.display = "none";
-
-  } else {
-
-    list.style.display = "block";
-
-    generateList();
-
-  }
-
-};
-
-window.saveEvent = async function () {
-
-  try {
-
-    const name =
-      document.getElementById("eventName").value;
-
-    if (!name) {
-
-      alert("名前を選択してください");
-
-      return;
-
-    }
-
-    const title =
-      document.getElementById("eventTitle").value;
-
-    const date =
-      document.getElementById("eventDate").value;
-
-    const hour =
-      document.getElementById("eventHour").value;
-
-    const minute =
-      document.getElementById("eventMinute").value;
-
-    let time = "";
-
-    if (hour !== "" && minute !== "") {
-
-      time = `${hour}:${minute}`;
-
-    }
-
-    const repeatType =
-      document.getElementById("repeatType").value;
-
-    const periodStart =
-      document.getElementById("periodStart").value;
-
-    const periodEnd =
-      document.getElementById("periodEnd").value;
-
-    let excludedDates = [];
-
-    if (selectedEvent?.extendedProps?.excludedDates) {
-
-      excludedDates =
-        selectedEvent.extendedProps.excludedDates;
-
-    }
-
-    const saveData = {
-      name,
-      title,
-      date,
-      time,
-      repeatType,
-      periodStart,
-      periodEnd,
-      excludedDates,
-      repeatEndDate:
-        selectedEvent?.extendedProps?.repeatEndDate || "",
-      color: COLORS[name],
-      createdAt: Date.now()
-    };
-
-    if (selectedEvent) {
-
-      await updateDoc(
-        doc(db, "events_v2", selectedEvent.id),
-        saveData
-      );
-
-    } else {
-
-      await addDoc(
-        collection(db, "events_v2"),
-        saveData
-      );
-
-    }
-
-    calendar.removeAllEvents();
-
-    await loadEvents();
-
-    selectedEvent = null;
-
-    closeModal();
-
-    alert("保存しました");
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("保存失敗");
-
-  }
-
-};
-
-async function loadEvents() {
-
-  const snapshot =
-    await getDocs(collection(db, "events_v2"));
-
-  snapshot.forEach((docSnap) => {
-
-    const data =
-      docSnap.data();
-
-    if (!data.excludedDates) {
-
-      data.excludedDates = [];
-
-    }
-
-    if (!data.repeatEndDate) {
-
-      data.repeatEndDate = "";
-
-    }
-
-    if (data.repeatType === "period") {
-
-      generatePeriodEvents(data, docSnap.id);
-
-    } else if (data.repeatType === "weekly") {
-
-      generateWeeklyEvents(data, docSnap.id);
-
-    } else if (data.repeatType === "monthly") {
-
-      generateMonthlyEvents(data, docSnap.id);
-
-    } else if (data.repeatType === "yearly") {
-
-      generateYearlyEvents(data, docSnap.id);
-
-    } else {
-
-      addCalendarEvent(
-        data,
-        docSnap.id,
-        data.date
-      );
-
-    }
-
-  });
-
-}
-
-function addCalendarEvent(data, id, dateStr) {
-
-  if (
-    data.excludedDates &&
-    data.excludedDates.includes(dateStr)
-  ) {
-    return;
-  }
-
-  if (
-    data.repeatEndDate &&
-    dateStr > data.repeatEndDate
-  ) {
-    return;
-  }
-
-calendar.addEvent({
-
-  id,
-
-  title: formatTitle(data),
-
-  start: data.time
-    ? `${dateStr}T${data.time}:00`
-    : dateStr,
-
-  allDay: !data.time,
-
-  backgroundColor: data.color,
-
-  borderColor: data.color,
-
-  extendedProps: data
-
-});
-  
-}
-
-function generatePeriodEvents(data, id) {
-
-  const start =
-    new Date(data.periodStart);
-
-  const end =
-    new Date(data.periodEnd);
-
-  const current =
-    new Date(start);
-
-  while (current <= end) {
-
-    const dateStr =
-      current.toISOString().split("T")[0];
-
-    addCalendarEvent(data, id, dateStr);
-
-    current.setDate(current.getDate() + 1);
-
-  }
-
-}
-
-function generateWeeklyEvents(data, id) {
-
-  const start =
-    new Date(data.date);
-
-  for (let i = 0; i < 52; i++) {
-
-    const current =
-      new Date(start);
-
-    current.setDate(
-      start.getDate() + (i * 7)
-    );
-
-    const dateStr =
-      current.toISOString().split("T")[0];
-
-    addCalendarEvent(data, id, dateStr);
-
-  }
-
-}
-
-function generateMonthlyEvents(data, id) {
-
-  const start =
-    new Date(data.date);
-
-  for (let i = 0; i < 24; i++) {
-
-    const current =
-      new Date(start);
-
-    current.setMonth(
-      start.getMonth() + i
-    );
-
-    const dateStr =
-      current.toISOString().split("T")[0];
-
-    addCalendarEvent(data, id, dateStr);
-
-  }
-
-}
-
-function generateYearlyEvents(data, id) {
-
-  const start =
-    new Date(data.date);
-
-  for (let i = 0; i < 10; i++) {
-
-    const current =
-      new Date(start);
-
-    current.setFullYear(
-      start.getFullYear() + i
-    );
-
-    const dateStr =
-      current.toISOString().split("T")[0];
-
-    addCalendarEvent(data, id, dateStr);
-
-  }
-
-}
-
-function formatTitle(data) {
-
-  let text = "";
-
-  if (data.time) {
-
-    text += `${data.time} `;
-
-  }
-
-  text += `[${data.name}] ${data.title}`;
-
-  return text;
-
-}
-
-function generateList() {
-
-  const list =
-    document.getElementById("eventList");
-
-  const events =
-    calendar.getEvents();
-
-  events.sort((a, b) => {
-
-    return new Date(a.start) -
-      new Date(b.start);
-
-  });
-
-  let html = "";
-
-  events.forEach(event => {
-
-    html += `
-      <div style="
-        margin-bottom:10px;
-        padding:10px;
-        border-bottom:1px solid #ddd;
-      ">
-
-        <strong>${event.startStr}</strong><br>
-
-        ${event.title}
-
-      </div>
-    `;
-
-  });
-
-  list.innerHTML = html;
-
-}
-
-function openDetailModal(event) {
-
-  document.getElementById("detailModal").style.display =
-    "flex";
-
-  document.getElementById("detailTitle").innerText =
-    event.title;
-
-  const buttons =
-    document.getElementById("detailButtons");
-
-  const repeatType =
-    event.extendedProps.repeatType;
-
-  if (repeatType === "none") {
-
-    buttons.innerHTML = `
-      <button onclick="editEvent()">
-        編集
-      </button>
-
-      <button onclick="deleteEvent()">
-        削除
-      </button>
-
-      <button onclick="closeDetailModal()">
-        閉じる
-      </button>
-    `;
-
-  } else {
-
-    buttons.innerHTML = `
-      <button onclick="editEvent()">
-        編集
-      </button>
-
-      <button onclick="deleteSingleRepeat()">
-        当日削除
-      </button>
-
-      <button onclick="deleteFutureRepeat()">
-        以降削除
-      </button>
-
-      <button onclick="closeDetailModal()">
-        閉じる
-      </button>
-    `;
-
-  }
-
-}
-
-window.closeDetailModal = function () {
-
-  document.getElementById("detailModal").style.display =
-    "none";
-
-};
-
-window.editEvent = function () {
-
-  closeDetailModal();
-
-  const data =
-    selectedEvent.extendedProps;
-
-  document.getElementById("eventName").value =
-    data.name || "";
-
-  document.getElementById("eventTitle").value =
-    data.title || "";
-
-  document.getElementById("eventDate").value =
-    data.date || "";
-
-  document.getElementById("eventHour").value =
-    "";
-
-  document.getElementById("eventMinute").value =
-    "";
-
-  if (data.time) {
-
-    const splitTime =
-      data.time.split(":");
-
-    document.getElementById("eventHour").value =
-      splitTime[0];
-
-    document.getElementById("eventMinute").value =
-      splitTime[1];
-
-  }
-
-  document.getElementById("repeatType").value =
-    data.repeatType || "none";
-
-  document.getElementById("periodStart").value =
-    data.periodStart || "";
-
-  document.getElementById("periodEnd").value =
-    data.periodEnd || "";
-
-  if (data.repeatType === "period") {
-
-    document.getElementById("periodFields").style.display =
-      "flex";
-
-  } else {
-
-    document.getElementById("periodFields").style.display =
-      "none";
-
-  }
-
-  document.getElementById("eventModal").style.display =
-    "flex";
-
-};
-
-window.deleteEvent = async function () {
-
-  try {
-
-    await deleteDoc(
-      doc(db, "events_v2", selectedEvent.id)
-    );
-
-    selectedEvent.remove();
-
-    closeDetailModal();
-
-    alert("削除しました");
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("削除失敗");
-
-  }
-
-};
-
-window.deleteSingleRepeat = async function () {
-
-  try {
-
-    const dateStr =
-      selectedEvent.startStr;
-
-    const data =
-      selectedEvent.extendedProps;
-
-    let excludedDates =
-      data.excludedDates || [];
-
-    if (!excludedDates.includes(dateStr)) {
-
-      excludedDates.push(dateStr);
-
-    }
-
-    await updateDoc(
-      doc(db, "events_v2", selectedEvent.id),
-      {
-        excludedDates
-      }
-    );
-
-    calendar.removeAllEvents();
-
-    await loadEvents();
-
-    closeDetailModal();
-
-    alert("当日の予定を削除しました");
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("削除失敗");
-
-  }
-
-};
-
-window.deleteFutureRepeat = async function () {
-
-  try {
-
-    const dateStr =
-      selectedEvent.startStr;
-
-    await updateDoc(
-      doc(db, "events_v2", selectedEvent.id),
-      {
-        repeatEndDate: dateStr
-      }
-    );
-
-    calendar.removeAllEvents();
-
-    await loadEvents();
-
-    closeDetailModal();
-
-    alert("この日以降の予定を削除しました");
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("削除失敗");
-
-  }
-
-};
-
-const repeatSelect =
-  document.getElementById("repeatType");
-
-repeatSelect.addEventListener("change", () => {
+  const option =
+    document.createElement("option");
 
   const value =
-    repeatSelect.value;
+    i.toString().padStart(2,"0");
 
-  const periodFields =
-    document.getElementById("periodFields");
+  option.value = value;
 
-  if (value === "period") {
+  option.textContent = value;
 
-    periodFields.style.display =
-      "flex";
+  hourSelect.appendChild(option);
 
-  } else {
+}
 
-    periodFields.style.display =
-      "none";
+
+/* 色 */
+
+function getClass(name){
+
+  switch(name){
+
+    case "パパ":
+      return "papa";
+
+    case "ママ":
+      return "mama";
+
+    case "トウカ":
+      return "touka";
+
+    case "ヒヨリ":
+      return "hiyori";
+
+    case "祖母":
+      return "sobo";
+
+    case "祖父":
+      return "soji";
+
+    default:
+      return "";
 
   }
 
-});
+}
+
+
+/* カレンダー */
+
+window.renderCalendar = function(){
+
+  const calendar =
+    document.getElementById("calendar");
+
+  calendar.innerHTML = "";
+
+  const year =
+    currentDate.getFullYear();
+
+  const month =
+    currentDate.getMonth();
+
+  document.getElementById("monthYear")
+    .innerText =
+      `${year}年 ${month+1}月`;
+
+  const dayNames =
+    ["日","月","火","水","木","金","土"];
+
+  dayNames.forEach(day=>{
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "day-name";
+
+    div.innerText = day;
+
+    calendar.appendChild(div);
+
+  });
+
+  const firstDay =
+    new Date(year,month,1).getDay();
+
+  const lastDate =
+    new Date(year,month+1,0).getDate();
+
+  for(let i=0;i<firstDay;i++){
+
+    const empty =
+      document.createElement("div");
+
+    empty.className =
+      "day empty";
+
+    calendar.appendChild(empty);
+
+  }
+
+  for(let day=1;day<=lastDate;day++){
+
+    const dateKey =
+      `${year}-${month+1}-${day}`;
+
+    const dayDiv =
+      document.createElement("div");
+
+    dayDiv.className =
+      "day";
+
+    dayDiv.innerHTML =
+      `<div class="date">${day}</div>`;
+
+    if(events[dateKey]){
+
+      events[dateKey]
+        .slice(0,5)
+        .forEach(ev=>{
+
+          const evDiv =
+            document.createElement("div");
+
+          evDiv.className =
+            `event ${getClass(ev.name)}`;
+
+          evDiv.innerHTML =
+            `
+            ${ev.time}
+            ${ev.name}
+            <br>
+            ${ev.schedule}
+            `;
+
+          dayDiv.appendChild(evDiv);
+
+        });
+
+    }
+
+    dayDiv.onclick = ()=>{
+
+      openModal(dateKey);
+
+    };
+
+    calendar.appendChild(dayDiv);
+
+  }
+
+  renderMonthlyList();
+
+};
+
+
+/* モーダル */
+
+window.openModal = function(date){
+
+  selectedDay = date;
+
+  document.getElementById("selectedDate")
+    .innerText =
+      `${date} の予定`;
+
+  document.getElementById("modal")
+    .style.display = "flex";
+
+  renderDayEvents();
+
+};
+
+
+window.closeModal = function(){
+
+  document.getElementById("modal")
+    .style.display = "none";
+
+};
+
+
+/* group id */
+
+function createGroupId(){
+
+  return "group_" + Date.now();
+
+}
+
+
+/* 保存 */
+
+window.saveEvent = async function(){
+
+  const saveBtn =
+    document.querySelector(".save-btn");
+
+  saveBtn.disabled = true;
+
+  saveBtn.innerText = "保存中...";
+
+  const name =
+    document.getElementById("name").value;
+
+  const schedule =
+    document.getElementById("schedule").value;
+
+  const hour =
+    document.getElementById("hour").value;
+
+  const minute =
+    document.getElementById("minute").value;
+
+  const repeat =
+    document.getElementById("repeatType").value;
+
+  const time =
+    `${hour}:${minute}`;
+
+  if(!name || !schedule){
+
+    alert("入力してください");
+
+    saveBtn.disabled = false;
+
+    saveBtn.innerText = "決定";
+
+    return;
+
+  }
+
+  const groupId =
+    createGroupId();
+
+  await addDoc(
+
+    collection(db,"events"),
+
+    {
+
+      date: selectedDay,
+
+      name,
+
+      schedule,
+
+      time,
+
+      repeat,
+
+      groupId
+
+    }
+
+  );
+
+  if(repeat !== "none"){
+
+    await createRepeatEvents(
+      selectedDay,
+      name,
+      schedule,
+      time,
+      repeat,
+      groupId
+    );
+
+  }
+
+  saveBtn.disabled = false;
+
+  saveBtn.innerText = "決定";
+
+  setTimeout(()=>{
+
+    document.getElementById("name").value = "";
+
+    document.getElementById("schedule").value = "";
+
+    document.getElementById("hour").value = "00";
+
+    document.getElementById("minute").value = "00";
+
+    document.getElementById("repeatType").value = "none";
+
+  },200);
+
+};
+
+
+/* 繰り返し */
+
+async function createRepeatEvents(
+  startDate,
+  name,
+  schedule,
+  time,
+  repeat,
+  groupId
+){
+
+  let base =
+    new Date(startDate);
+
+  for(let i=1;i<=365;i++){
+
+    let next =
+      new Date(base);
+
+    if(repeat==="daily"){
+
+      next.setDate(
+        base.getDate()+i
+      );
+
+    }
+
+    if(repeat==="weekly"){
+
+      next.setDate(
+        base.getDate()+(7*i)
+      );
+
+    }
+
+    if(repeat==="monthly"){
+
+      next.setMonth(
+        base.getMonth()+i
+      );
+
+    }
+
+    if(
+      repeat==="monthly" &&
+      i > 12
+    ){
+
+      break;
+
+    }
+
+    if(
+      repeat==="weekly" &&
+      i > 52
+    ){
+
+      break;
+
+    }
+
+    const y =
+      next.getFullYear();
+
+    const m =
+      next.getMonth()+1;
+
+    const d =
+      next.getDate();
+
+    const key =
+      `${y}-${m}-${d}`;
+
+    await addDoc(
+
+      collection(db,"events"),
+
+      {
+
+        date: key,
+
+        name,
+
+        schedule,
+
+        time,
+
+        repeat,
+
+        groupId
+
+      }
+
+    );
+
+  }
+
+}
+
+
+/* 削除 */
+
+async function deleteEvent(id){
+
+  if(
+    !confirm(
+      "削除しますか？"
+    )
+  ){
+
+    return;
+
+  }
+
+  await deleteDoc(
+    doc(db,"events",id)
+  );
+
+}
+
+
+/* 当日削除 */
+
+async function deleteSingleDay(
+  groupId,
+  targetDate
+){
+
+  if(
+    !confirm(
+      "この日だけ削除しますか？"
+    )
+  ){
+
+    return;
+
+  }
+
+  if(!events[targetDate]){
+
+    return;
+
+  }
+
+  for(const ev of events[targetDate]){
+
+    if(ev.groupId === groupId){
+
+      await deleteDoc(
+        doc(db,"events",ev.id)
+      );
+
+    }
+
+  }
+
+}
+
+
+/* 以降削除 */
+
+async function deleteRepeatEvents(
+  groupId,
+  fromDate
+){
+
+  if(
+    !confirm(
+      "この日以降を削除しますか？"
+    )
+  ){
+
+    return;
+
+  }
+
+  const start =
+    new Date(fromDate);
+
+  for(const date in events){
+
+    const target =
+      new Date(date);
+
+    if(target >= start){
+
+      for(const ev of events[date]){
+
+        if(ev.groupId === groupId){
+
+          await deleteDoc(
+            doc(db,"events",ev.id)
+          );
+
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
+
+/* 全削除 */
+
+async function deleteAllRepeatEvents(
+  groupId
+){
+
+  if(
+    !confirm(
+      "繰り返し予定を全部削除しますか？"
+    )
+  ){
+
+    return;
+
+  }
+
+  for(const date in events){
+
+    for(const ev of events[date]){
+
+      if(ev.groupId === groupId){
+
+        await deleteDoc(
+          doc(db,"events",ev.id)
+        );
+
+      }
+
+    }
+
+  }
+
+}
+
+
+/* 日別一覧 */
+
+function renderDayEvents(){
+
+  const dayEvents =
+    document.getElementById("dayEvents");
+
+  dayEvents.innerHTML = "";
+
+  if(
+    !events[selectedDay] ||
+    events[selectedDay].length===0
+  ){
+
+    dayEvents.innerHTML =
+      "予定はありません";
+
+    return;
+
+  }
+
+  events[selectedDay]
+    .forEach(ev=>{
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "modal-event-item";
+
+      const left =
+        document.createElement("div");
+
+      left.innerHTML =
+        `
+        ${ev.time}
+        ｜ ${ev.name}
+        ｜ ${ev.schedule}
+        `;
+
+      div.appendChild(left);
+
+      const group =
+        document.createElement("div");
+
+      group.className =
+        "button-group";
+
+      /* 削除 */
+
+      const deleteBtn =
+        document.createElement("button");
+
+      deleteBtn.className =
+        "delete-btn";
+
+      deleteBtn.innerText =
+        "削除";
+
+      deleteBtn.onclick = ()=>{
+
+        if(ev.repeat !== "none"){
+
+          deleteSingleDay(
+            ev.groupId,
+            selectedDay
+          );
+
+        }else{
+
+          deleteEvent(ev.id);
+
+        }
+
+      };
+
+      group.appendChild(deleteBtn);
+
+      /* 繰り返し */
+
+      if(ev.repeat !== "none"){
+
+        const futureBtn =
+          document.createElement("button");
+
+        futureBtn.className =
+          "repeat-delete-btn";
+
+        futureBtn.innerText =
+          "以降削除";
+
+        futureBtn.onclick = ()=>{
+
+          deleteRepeatEvents(
+            ev.groupId,
+            selectedDay
+          );
+
+        };
+
+        group.appendChild(futureBtn);
+
+        const allBtn =
+          document.createElement("button");
+
+        allBtn.className =
+          "repeat-delete-btn";
+
+        allBtn.innerText =
+          "全削除";
+
+        allBtn.onclick = ()=>{
+
+          deleteAllRepeatEvents(
+            ev.groupId
+          );
+
+        };
+
+        group.appendChild(allBtn);
+
+      }
+
+      div.appendChild(group);
+
+      dayEvents.appendChild(div);
+
+    });
+
+}
+
+
+/* 月変更 */
+
+window.changeMonth = function(num){
+
+  currentDate.setMonth(
+    currentDate.getMonth()+num
+  );
+
+  renderCalendar();
+
+};
+
+
+/* 一覧 */
+
+function renderMonthlyList(){
+
+  const monthlyList =
+    document.getElementById("monthlyList");
+
+  monthlyList.innerHTML = "";
+
+  const year =
+    currentDate.getFullYear();
+
+  const month =
+    currentDate.getMonth()+1;
+
+  let list = [];
+
+  for(const date in events){
+
+    const sp =
+      date.split("-");
+
+    if(
+      Number(sp[0])===year &&
+      Number(sp[1])===month
+    ){
+
+      events[date]
+        .forEach(ev=>{
+
+          list.push({
+
+            date,
+            ...ev
+
+          });
+
+        });
+
+    }
+
+  }
+
+  list.sort((a,b)=>{
+
+    if(a.date===b.date){
+
+      return a.time.localeCompare(b.time);
+
+    }
+
+    return new Date(a.date)
+      - new Date(b.date);
+
+  });
+
+  if(list.length===0){
+
+    monthlyList.innerHTML =
+      "予定はありません";
+
+    return;
+
+  }
+
+  list.forEach(item=>{
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "list-item";
+
+    div.innerHTML =
+      `
+      ${item.date}
+      ｜ ${item.time}
+      ｜ ${item.name}
+      ｜ ${item.schedule}
+      `;
+
+    monthlyList.appendChild(div);
+
+  });
+
+}
+
+
+/* リアルタイム同期 */
+
+onSnapshot(
+
+  collection(db,"events"),
+
+  (snapshot)=>{
+
+    events = {};
+
+    snapshot.forEach(docSnap=>{
+
+      const data =
+        docSnap.data();
+
+      if(!events[data.date]){
+
+        events[data.date] = [];
+
+      }
+
+      events[data.date].push({
+
+        id: docSnap.id,
+
+        ...data
+
+      });
+
+    });
+
+    renderCalendar();
+
+    if(selectedDay){
+
+      renderDayEvents();
+
+    }
+
+  }
+
+);
+
+
+renderCalendar();
+
+window.login = login;
+window.saveEvent = saveEvent;
+window.closeModal = closeModal;
+window.changeMonth = changeMonth;
+window.openModal = openModal;
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker
+    .register("./service-worker.js")
+    .then(() => {
+
+      console.log("Service Worker登録成功");
+
+    });
+
+}
