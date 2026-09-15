@@ -58,7 +58,6 @@ signInAnonymously(auth)
 
 const APP_PASSWORD = "1980";
 
-
 /* ログイン */
 
 window.login = function(){
@@ -1248,11 +1247,6 @@ onSnapshot(
 
 renderCalendar();
 
-window.login = login;
-window.saveEvent = saveEvent;
-window.closeModal = closeModal;
-window.changeMonth = changeMonth;
-window.openModal = openModal;
 if ("serviceWorker" in navigator) {
 
   navigator.serviceWorker
@@ -1264,9 +1258,4 @@ if ("serviceWorker" in navigator) {
     });
 
 }
-'''
 
-path = Path("/mnt/data/script.js")
-path.write_text(script, encoding="utf-8", newline="\n")
-print(f"script.js を作成しました: {path}")
-print(f"サイズ: {path.stat().st_size:,} bytes")
