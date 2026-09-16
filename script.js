@@ -669,7 +669,7 @@ window.saveEvent = async function(){
 
   const groupId =
     createGroupId();
-
+console.log("① addDoc実行直前", {name, schedule, time, repeat, selectedDay});
   await addDoc(
     collection(db,"events"),
     {
@@ -681,7 +681,8 @@ window.saveEvent = async function(){
       groupId
     }
   );
-
+console.log("② addDoc成功");
+  
   if(repeat !== "none"){
 
     await createRepeatEvents(
@@ -794,19 +795,12 @@ async function createRepeatEvents(
       collection(db,"events"),
 
       {
-
         date: key,
-
         name,
-
         schedule,
-
         time,
-
         repeat,
-
         groupId
-
       }
 
     );
@@ -825,17 +819,12 @@ async function deleteEvent(id){
       "削除しますか？"
     )
   ){
-
     return;
-
   }
-
   await deleteDoc(
     doc(db,"events",id)
   );
-
 }
-
 
 /* 当日削除 */
 
