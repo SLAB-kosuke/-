@@ -671,25 +671,15 @@ window.saveEvent = async function(){
     createGroupId();
 
   await addDoc(
-
     collection(db,"events"),
-
     {
-
       date: selectedDay,
-
       name,
-
       schedule,
-
       time,
-
       repeat,
-
       groupId
-
     }
-
   );
 
   if(repeat !== "none"){
