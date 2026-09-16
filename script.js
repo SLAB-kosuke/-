@@ -669,8 +669,8 @@ window.saveEvent = async function(){
 
   const groupId =
     createGroupId();
-console.log("① addDoc実行直前", {name, schedule, time, repeat, selectedDay});
-  await addDoc(
+
+const docRef = await addDoc(
     collection(db,"events"),
     {
       date: selectedDay,
@@ -681,8 +681,7 @@ console.log("① addDoc実行直前", {name, schedule, time, repeat, selectedDay
       groupId
     }
   );
-console.log("② addDoc成功");
-  
+  console.log("② addDoc成功 ID =", docRef.id);
   if(repeat !== "none"){
 
     await createRepeatEvents(
